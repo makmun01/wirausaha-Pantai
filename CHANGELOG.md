@@ -4,6 +4,17 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini dengan meng
 
 ---
 
+## [1.0.1] - 2026-11-09 (Aktivasi CI/CD GitHub Actions & Perbaikan Smoke Test)
+
+### Added
+- **GitHub Actions CI/CD Workflow:** Menambahkan [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) dengan 4 job (`code-lint-and-validation`, `database-and-smoke-tests`, `docker-and-security-audit`, dan `deploy-staging` opsional) pada event `push`/`pull_request` ke `main` & `staging`.
+- **Dokumentasi CI/CD:** Memperbarui [docs/deployment/CI_CD_DOCUMENTATION.md](docs/deployment/CI_CD_DOCUMENTATION.md) dengan referensi workflow aktif.
+
+### Fixed
+- **Handler Detail Produk (`public/index.php`):** Menambahkan fungsi `renderProductDetail()` untuk rute `/produk/{slug}` yang sebelumnya memicu `Fatal error` saat uji smoke test (`DEF-CI-001`, status `CLOSED` setelah retest 29 rute `PASS`).
+
+---
+
 ## [1.0.0] - 2026-11-02 (Rilis Penuh 16 Pertemuan Selesai - Milestone UAS)
 
 ### Added (Ditambahkan Secara Komprehensif)

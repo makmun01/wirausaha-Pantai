@@ -1,0 +1,251 @@
+name: CI/CD Pipeline - Jumiang Smart Tourism & UMKM
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-lint-and-validation:
+    name: 1. Code Lint & Config Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_mysql, mbstring, gd, zip
+          tools: composer:v2
+
+      - name: Validate composer.json syntax and schema
+        run: |
+          php -r "json_decode(file_get_contents('composer.json'), false, 512, JSON_THROW_ON_ERROR); echo 'composer.json is valid JSON' . PHP_EOL;"
+          composer validate --no-check-all --no-check-lock
+
+      - name: Lint all PHP files (php -l)
+        run: |
+          find app database public resources routes -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Validate Docker Compose configuration
+        run: |
+          docker compose config --quiet
+
+  database-and-smoke-tests:
+    name: 2. MySQL 8.4 Init & Route Smoke Tests
+    runs-on: ubuntu-latest
+    needs: code-lint-and-validation
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: jumiang_tourism
+          MYSQL_USER: jumiang_user
+          MYSQL_PASSWORD: jumiang_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_mysql, mbstring
+
+      - name: Import database/jumiang_database.sql into MySQL 8.4
+        run: |
+          for i in $(seq 1 30); do
+            if docker run --rm --network host mysql:8.4 mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot_password --silent; then
+              break
+            fi
+            echo "Waiting for MySQL 8.4..."
+            sleep 2
+          done
+          docker run --rm --network host -i mysql:8.4 \
+            mysql -h 127.0.0.1 -P 3306 -u root -proot_password < database/jumiang_database.sql
+
+      - name: Verify database schema tables and demo seed counts via PDO
+        run: |
+          php -r '
+          $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=jumiang_tourism;charset=utf8mb4", "root", "root_password", [
+              PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+          ]);
+          $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+          echo "Total tables: " . count($tables) . PHP_EOL;
+          if (count($tables) < 22) {
+              fwrite(STDERR, "Expected at least 22 tables, found " . count($tables) . PHP_EOL);
+              exit(1);
+          }
+          $checks = [
+              "roles" => 6,
+              "users" => 8,
+              "destinations" => 1,
+              "map_markers" => 7,
+              "umkm_merchants" => 3,
+              "products" => 5,
+              "orders" => 2,
+              "financial_accounts" => 5,
+              "reservations" => 2,
+              "partnerships" => 3,
+              "audit_logs" => 3,
+          ];
+          foreach ($checks as $table => $minRows) {
+              $count = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn();
+              echo "Table {$table}: {$count} rows" . PHP_EOL;
+              if ($count < $minRows) {
+                  fwrite(STDERR, "Expected at least {$minRows} rows in {$table}, found {$count}" . PHP_EOL);
+                  exit(1);
+              }
+          }
+          '
+
+      - name: Start PHP preview server and smoke test all routes
+        run: |
+          php -S 127.0.0.1:8000 -t public > /tmp/php-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          for i in $(seq 1 15); do
+            if curl -s -o /dev/null http://127.0.0.1:8000/; then
+              break
+            fi
+            sleep 1
+          done
+
+          ROUTES=(
+            "/"
+            "/tentang-jumiang"
+            "/peta-wisata"
+            "/katalog-umkm"
+            "/produk/rengginang-lorjuk-super"
+            "/keranjang"
+            "/checkout"
+            "/reservasi-wisata"
+            "/login"
+            "/register"
+            "/demo-login?role=super_admin"
+            "/dashboard"
+            "/admin/products"
+            "/admin/inventory"
+            "/admin/financial"
+            "/admin/financial/profit-loss"
+            "/admin/orders"
+            "/admin/reservations"
+            "/admin/umkm"
+            "/admin/partnerships"
+            "/admin/eis"
+            "/admin/reports"
+            "/admin/audit-logs"
+            "/demo-login?role=pengelola_wisata"
+            "/demo-login?role=pelaku_umkm"
+            "/demo-login?role=bendahara"
+            "/demo-login?role=pimpinan"
+            "/demo-login?role=wisatawan"
+            "/logout"
+          )
+
+          for route in "${ROUTES[@]}"; do
+            BODY_FILE=$(mktemp)
+            STATUS=$(curl -sS -L -c /tmp/cookies.txt -b /tmp/cookies.txt -o "$BODY_FILE" -w "%{http_code}" "http://127.0.0.1:8000${route}")
+            echo "GET ${route} -> HTTP ${STATUS}"
+            if [ "$STATUS" != "200" ]; then
+              echo "Route ${route} failed with HTTP ${STATUS}"
+              cat /tmp/php-server.log
+              exit 1
+            fi
+            if grep -Eqi "(Fatal error|Parse error|Uncaught Error|Warning:)" "$BODY_FILE"; then
+              echo "PHP runtime error/warning detected on ${route}"
+              cat "$BODY_FILE"
+              exit 1
+            fi
+            rm -f "$BODY_FILE"
+          done
+
+          if grep -Eqi "(Fatal error|Parse error|Uncaught)" /tmp/php-server.log; then
+            echo "PHP server log reported errors:"
+            cat /tmp/php-server.log
+            exit 1
+          fi
+
+  docker-and-security-audit:
+    name: 3. Docker Build & Security Hygiene Audit
+    runs-on: ubuntu-latest
+    needs: code-lint-and-validation
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify repository security hygiene
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "ERROR: .env file must not be tracked in Git!"
+            exit 1
+          fi
+          grep -Eq '^\.env\r?$' .gitignore
+          if grep -rnE "\b(dd|dump|var_dump|eval)\s*\(" app/ routes/; then
+            echo "ERROR: Debug or dangerous function call detected in app/ or routes/"
+            exit 1
+          fi
+          echo "Security hygiene checks passed."
+
+      - name: Build Docker image and verify PHP extensions
+        run: |
+          docker build -t jumiang-smart-tourism:ci .
+          docker run --rm jumiang-smart-tourism:ci php -v
+          MODULES=$(docker run --rm jumiang-smart-tourism:ci php -m)
+          for ext in pdo_mysql mbstring gd zip opcache; do
+            echo "$MODULES" | grep -qi "$ext" || { echo "Missing PHP extension: $ext"; exit 1; }
+          done
+          echo "All required PHP extensions verified."
+
+  deploy-staging:
+    name: 4. Auto-Deploy Staging (Optional VPS)
+    runs-on: ubuntu-latest
+    needs: [database-and-smoke-tests, docker-and-security-audit]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging' && vars.ENABLE_STAGING_DEPLOY == 'true'
+    environment: staging
+
+    steps:
+      - name: Deploy to Staging VPS via SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ] || [ -z "$VPS_APP_PATH" ]; then
+            echo "Missing required VPS deployment secrets (VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_APP_PATH)."
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$VPS_APP_PATH' && git pull origin staging && docker compose up -d --build"

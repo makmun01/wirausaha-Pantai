@@ -338,6 +338,106 @@ HTML;
     renderLayoutFooter();
 }
 
+function renderProductDetail() {
+    global $uri;
+    $slug = trim(substr($uri, strlen('/produk/')), '/');
+    $catalog = [
+        'rengginang-lorjuk-super' => [
+            'name' => 'Rengginang Lorjuk Super Khas Jumiang',
+            'category' => 'Kuliner & Oleh-Oleh Laut',
+            'merchant' => 'Sentra Olahan Lorjuk Bu Maryam',
+            'owner' => 'Ibu Maryam',
+            'price' => 'Rp 35.000',
+            'unit' => 'bungkus',
+            'stock' => 45,
+            'address' => 'Sentra Kuliner Pesisir No. 04, Pantai Jumiang',
+            'description' => 'Rengginang gurih dengan taburan lorjuk (kerang bambu) segar tangkapan pesisir Pantai Jumiang. Isi 500 gram, renyah dan nikmat.'
+        ],
+        'keripik-ikan-teri-krispi' => [
+            'name' => 'Keripik Ikan Teri Krispi Gurih',
+            'category' => 'Kuliner & Oleh-Oleh Laut',
+            'merchant' => 'Sentra Olahan Lorjuk Bu Maryam',
+            'owner' => 'Ibu Maryam',
+            'price' => 'Rp 20.000',
+            'unit' => 'bungkus',
+            'stock' => 30,
+            'address' => 'Sentra Kuliner Pesisir No. 04, Pantai Jumiang',
+            'description' => 'Olahan teri nasi segar dengan balutan tepung bumbu rempah Madura. Berat bersih 250 gram.'
+        ],
+        'kain-batik-tulis-motif-bahari' => [
+            'name' => 'Kain Batik Tulis Motif Bahari Pamekasan',
+            'category' => 'Batik & Busana Lokal',
+            'merchant' => 'Batik Pesisir Jumiang Indah',
+            'owner' => 'Pak Hidayat',
+            'price' => 'Rp 175.000',
+            'unit' => 'lembar',
+            'stock' => 8,
+            'address' => 'Sentra Seni & Kerajinan Tanjung No. 12, Pamekasan',
+            'description' => 'Kain batik tulis halus dengan corak ombak, terumbu karang, dan perahu nelayan Jumiang. Ukuran 2x1.15 meter.'
+        ],
+    ];
+    $item = $catalog[$slug] ?? [
+        'name' => ucwords(str_replace('-', ' ', $slug ?: 'Produk UMKM Jumiang')),
+        'category' => 'Produk UMKM Pantai Jumiang',
+        'merchant' => 'Mitra UMKM Pantai Jumiang',
+        'owner' => 'Pelaku UMKM Lokal',
+        'price' => 'Rp 35.000',
+        'unit' => 'pcs',
+        'stock' => 15,
+        'address' => 'Kawasan Wisata Pantai Jumiang, Desa Tanjung',
+        'description' => 'Produk olahan berkualitas khas Pantai Jumiang, diproduksi langsung oleh pelaku UMKM lokal Desa Tanjung secara higienis dan terjamin.'
+    ];
+    $safeName = htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8');
+    $safeCategory = htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8');
+    $safeMerchant = htmlspecialchars($item['merchant'], ENT_QUOTES, 'UTF-8');
+    $safeOwner = htmlspecialchars($item['owner'], ENT_QUOTES, 'UTF-8');
+    $safeAddress = htmlspecialchars($item['address'], ENT_QUOTES, 'UTF-8');
+    $safeDesc = htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8');
+
+    renderLayoutHeader($safeName . ' - Jumiang UMKM');
+    echo <<<HTML
+    <div class="container py-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="/katalog-umkm">Katalog UMKM</a></li>
+                <li class="breadcrumb-item active">{$safeName}</li>
+            </ol>
+        </nav>
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <div class="card card-custom p-4 bg-light text-center d-flex align-items-center justify-content-center" style="min-height: 360px;">
+                    <i class="bi bi-box-seam display-1 text-primary mb-3"></i>
+                    <span class="badge bg-primary px-3 py-2">FOTO PRODUK UMKM [DEMO]</span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <span class="badge bg-info bg-opacity-10 text-primary border align-self-start mb-2">{$safeCategory}</span>
+                    <h2 class="fw-bold mb-2">{$safeName}</h2>
+                    <p class="text-muted small mb-3"><i class="bi bi-shop me-1 text-secondary"></i> Dijual oleh: <strong class="text-dark">{$safeMerchant}</strong> (Pemilik: {$safeOwner})</p>
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        <span class="small text-muted d-block">Harga Satuan</span>
+                        <span class="display-6 fw-bold text-primary">{$item['price']}</span>
+                        <span class="text-muted">/ {$item['unit']}</span>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">Deskripsi Produk</h6>
+                        <p class="text-secondary">{$safeDesc}</p>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6"><div class="p-3 border rounded-3"><span class="small text-muted d-block">Stok Tersedia</span><span class="fw-bold fs-5 text-success">{$item['stock']} {$item['unit']}</span></div></div>
+                        <div class="col-sm-6"><div class="p-3 border rounded-3"><span class="small text-muted d-block">Lokasi Gerai</span><span class="fw-bold small text-dark d-block text-truncate">{$safeAddress}</span></div></div>
+                    </div>
+                    <a href="/keranjang" class="btn btn-ocean btn-lg w-100 rounded-pill fw-bold"><i class="bi bi-cart3 me-2"></i> Tambah ke Keranjang</a>
+                </div>
+            </div>
+        </div>
+    </div>
+HTML;
+    renderLayoutFooter();
+}
+
 function renderCart() {
     renderLayoutHeader("Keranjang Belanja");
     echo <<<HTML

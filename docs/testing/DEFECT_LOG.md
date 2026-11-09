@@ -21,5 +21,6 @@
 | Defect ID | Tanggal Temuan | Modul | Severity | Deskripsi Kerusakan | Langkah Reproduksi | Hasil Aktual vs Harapan | Status | Solusi / Commit Ref |
 |---|---|---|---|---|---|---|---|---|
 | *DEF-INIT* | 2026-11-02 | Setup | Minor | Belum ada dependensi terpasang (repositori inisiasi baru) | Jalankan `composer install` pada repo baru | Belum ada vendor; Harapan: vendor terpasang | CLOSED | Inisiasi arsitektur dan dokumentasi Week 1 selesai |
+| *DEF-CI-001* | 2026-11-09 | `MOD-MKT` (`public/index.php`) | Major | Rute `/produk/{slug}` memanggil `renderProductDetail()` yang belum terdefinisi pada server preview | Akses `GET /produk/rengginang-lorjuk-super` | Aktual: PHP `Fatal error: Call to undefined function renderProductDetail()`; Harapan: HTTP 200 halaman detail produk | CLOSED | Implementasi `renderProductDetail()` di `public/index.php` dan retest 29 rute (`PASS` 100%) |
 
 *(Defect selanjutnya akan dicatat secara kronologis pada setiap pertemuan pengujian).*
