@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jumiang_app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=db
+      - DB_DATABASE=jumiang_tourism
+      - DB_USERNAME=jumiang_user
+      - DB_PASSWORD=jumiang_password
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.4
+    container_name: jumiang_mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: jumiang_tourism
+      MYSQL_USER: jumiang_user
+      MYSQL_PASSWORD: jumiang_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/jumiang_database.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:
+    driver: local

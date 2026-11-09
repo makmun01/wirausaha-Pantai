@@ -1,0 +1,33 @@
+# TEST CASE MATRIX
+## JUMIANG SMART TOURISM & UMKM
+**Master Test Execution & Verification Matrix (ISO/IEC/IEEE 29119-3)**
+
+Catatan Integritas: Nilai `Actual Result` dan `Status` wajib diperbarui saat uji coba nyata dijalankan. Tidak diperbolehkan memalsukan status pengujian.
+
+---
+
+## Matriks Kasus Uji (Test Cases)
+
+| Test ID | Modul | Skenario Pengujian | Langkah Pengujian | Input Data | Expected Result | Actual Result | Status | Severity |
+|---|---|---|---|---|---|---|---|---|
+| **TC-AUTH-01** | `MOD-AUTH` | Login dengan kredensial valid (Super Admin) | 1. Buka `/login`<br>2. Masukkan email & password terdaftar<br>3. Klik Masuk | Email: `admin@jumiang.test`<br>Pass: `Password123!` | Pengguna berhasil login, diarahkan ke Dashboard Super Admin | Belum diuji | NOT TESTED | High |
+| **TC-AUTH-02** | `MOD-AUTH` | Login dengan password salah | 1. Buka `/login`<br>2. Masukkan email valid & password salah<br>3. Klik Masuk | Email: `admin@jumiang.test`<br>Pass: `SalahPass!` | Sistem menampilkan pesan error "Kredensial tidak cocok", tetap di halaman login | Belum diuji | NOT TESTED | High |
+| **TC-AUTH-03** | `MOD-AUTH` | Akses rute terlarang (Role Boundary Check) | 1. Login sebagai Wisatawan<br>2. Buka URL `/admin/dashboard` langsung | Sesi: Role `wisatawan` | HTTP 403 Forbidden / Dialihkan ke beranda publik dengan pesan akses ditolak | Belum diuji | NOT TESTED | Critical |
+| **TC-AUTH-04** | `MOD-AUTH` | Registrasi akun wisatawan baru | 1. Buka `/register`<br>2. Isi nama, email, password konfirmasi<br>3. Submit | Nama: "Budi Santoso"<br>Email: "budi@test.com"<br>Pass: "Budi12345!" | Akun terbentuk di database dengan role default `wisatawan`, otomatis login | Belum diuji | NOT TESTED | High |
+| **TC-TOUR-01** | `MOD-TOUR` | Menampilkan informasi profil Pantai Jumiang | 1. Buka URL `/tentang-jumiang` | Data destinasi aktif | Menampilkan deskripsi Pantai Jumiang, sejarah, jam buka, dan penanda `[DATA DEMO]` | Belum diuji | NOT TESTED | Medium |
+| **TC-GMAP-01** | `MOD-GMAP` | Pemuatan peta interaktif Leaflet.js | 1. Buka URL `/peta-wisata`<br>2. Tunggu tile OpenStreetMap termuat | Koordinat Jumiang: -7.2289, 113.5381 | Peta termuat sempurna, center pada kawasan Jumiang, pin lokasi muncul | Belum diuji | NOT TESTED | High |
+| **TC-GMAP-02** | `MOD-GMAP` | Filter layer marker kategori UMKM | 1. Pada peta, centang filter hanya `UMKM`<br>2. Periksa tampilan pin | Filter: `category=UMKM` | Hanya pin gerai UMKM yang tampil di peta, pin fasilitas umum disembunyikan | Belum diuji | NOT TESTED | Medium |
+| **TC-UMKM-01** | `MOD-UMKM` | Pendaftaran gerai UMKM baru oleh mitra | 1. Buka `/umkm/daftar`<br>2. Isi profil usaha & upload foto<br>3. Submit form | Nama: "Olahan Lorjuk Berkah"<br>Owner: "Ibu Siti"<br>Kategori: "Kuliner" | Data tersimpan dengan status `PENDING`, menunggu verifikasi Pengelola/Admin | Belum diuji | NOT TESTED | High |
+| **TC-UMKM-02** | `MOD-UMKM` | Verifikasi pendaftaran UMKM oleh Admin | 1. Login Admin<br>2. Buka `/admin/umkm/verifikasi`<br>3. Klik Setujui pada UMKM pending | Status target: `PENDING` -> `VERIFIED` | Status berubah menjadi `VERIFIED`, profil toko dan produk aktif di publik | Belum diuji | NOT TESTED | High |
+| **TC-PROD-01** | `MOD-PROD` | Tambah produk baru dengan data lengkap | 1. Login Pelaku UMKM terverifikasi<br>2. Buka form tambah produk<br>3. Isi data valid & simpan | Nama: "Keripik Lorjuk Renyah"<br>Harga: 25000<br>Stok: 50 | Produk tersimpan, tampil di katalog toko dan marketplace | Belum diuji | NOT TESTED | High |
+| **TC-PROD-02** | `MOD-PROD` | Validasi input harga negatif (Boundary Value) | 1. Buka form produk<br>2. Isi harga dengan angka minus (-10000)<br>3. Submit | Harga: `-10000` | Validasi gagal, pesan error "Harga harus bernilai positif minimal 0" | Belum diuji | NOT TESTED | High |
+| **TC-MKT-01** | `MOD-MKT` | Wisatawan menambahkan produk ke keranjang | 1. Buka katalog produk<br>2. Pilih produk, tentukan jumlah: 2<br>3. Klik "Tambah ke Keranjang" | ID Produk: 1, Qty: 2 | Badge keranjang bertambah 2, item tersimpan pada sesi cart | Belum diuji | NOT TESTED | High |
+| **TC-MKT-02** | `MOD-MKT` | Checkout pesanan & simulasi pembayaran | 1. Buka keranjang<br>2. Klik Checkout<br>3. Pilih QRIS Simulasi & bayar | Saldo simulasi cukup | Status pesanan menjadi `PAID`, stok barang berkurang otomatis, invoice terbit | Belum diuji | NOT TESTED | Critical |
+| **TC-INVN-01** | `MOD-INVN` | Pengurangan stok otomatis saat transaksi lunas | 1. Stok produk awal = 10<br>2. Terjadi pembelian lunas sebanyak 3 pcs<br>3. Cek stok produk | Pembelian: 3 pcs | Stok produk berkurang menjadi 7, record tercatat di `inventory_logs` (type OUT) | Belum diuji | NOT TESTED | Critical |
+| **TC-INVN-02** | `MOD-INVN` | Penolakan pesanan saat kuantitas melebihi stok | 1. Stok produk = 2<br>2. User mencoba memesan 5 pcs | Request beli: 5 pcs | Sistem menolak dengan pesan "Stok tidak mencukupi", transaksi tidak diproses | Belum diuji | NOT TESTED | High |
+| **TC-FIN-01** | `MOD-FIN` | Pemisahan akun kas usaha vs pribadi | 1. Buka modul keuangan UMKM<br>2. Cek daftar rekening kas | Rekening `BUSINESS` & `PERSONAL` | Arus kas usaha tercatat di akun `BUSINESS` dan terpisah mutlak dari `PERSONAL` | Belum diuji | NOT TESTED | Critical |
+| **TC-FIN-02** | `MOD-FIN` | Pencatatan jurnal pemasukan otomatis dari order | 1. Pesanan senilai Rp 100.000 lunas | Transaksi order ID: #INV-001 | Muncul mutasi kredit Rp 100.000 pada `financial_transactions` kas usaha UMKM | Belum diuji | NOT TESTED | High |
+| **TC-FIN-03** | `MOD-FIN` | Isolasi data finansial antar-UMKM | 1. Login sebagai UMKM A<br>2. Coba akses endpoint keuangan UMKM B | Target ID: UMKM B | HTTP 403 Forbidden / Kueri terisolasi hanya menampilkan data UMKM A | Belum diuji | NOT TESTED | Critical |
+| **TC-RESV-01** | `MOD-RESV` | Pemesanan reservasi paket wisata rombongan | 1. Buka `/reservasi`<br>2. Isi tanggal, jumlah orang: 15<br>3. Submit booking | Tanggal: H+7, Wisatawan: 15 | Kode booking unik terbit, data tersimpan dengan status `PENDING` | Belum diuji | NOT TESTED | High |
+| **TC-EIS-01** | `MOD-EIS` | Verifikasi kalkulasi KPI dashboard eksekutif | 1. Login Pimpinan<br>2. Buka Dashboard EIS | Agregasi data transaksi nyata | Angka omzet dan grafik tren sesuai dengan penjumlahan riil database | Belum diuji | NOT TESTED | High |
+| **TC-AUDT-01** | `MOD-AUDT` | Verifikasi pencatatan audit trail | 1. User mengubah harga produk dari 20.000 ke 25.000<br>2. Periksa tabel `audit_logs` | ID User, Aksi: `PRICE_UPDATED` | Tercatat log dengan `old_values: 20000`, `new_values: 25000`, IP & timestamp | Belum diuji | NOT TESTED | Medium |
