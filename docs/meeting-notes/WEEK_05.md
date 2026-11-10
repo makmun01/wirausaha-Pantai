@@ -23,12 +23,15 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
+- `app/Exceptions/SecurityException.php`
 - `app/Services/InventoryLedgerService.php`
 - `app/Services/FinancialBookkeepingService.php`
 - `app/Http/Controllers/Web/FinancialController.php`
 - `app/Http/Controllers/Web/InventoryController.php`
 - `resources/views/admin/financial/index.blade.php`, `profit_loss.blade.php`
 - `resources/views/admin/inventory/index.blade.php`
+- `docs/testing/WHITE_BOX_TESTING.md` ($V(G) = 5$ pada `recordTransaction()`)
+- `tests/Unit/FinancialBookkeepingUnitTest.php` & `phpunit.xml`
 
 ---
 

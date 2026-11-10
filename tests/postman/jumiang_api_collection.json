@@ -1,0 +1,168 @@
+{
+  "info": {
+    "name": "Jumiang Smart Tourism & UMKM REST API v1",
+    "_postman_id": "a9c8e120-5c4e-4b3a-9d61-101010102026",
+    "description": "Koleksi pengujian API REST v1 dan integrasi antarmodul Order -> Inventory -> Ledger [DATA DEMO / SIMULASI]",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET Destinations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Contains Tanjung village', function () { pm.expect(pm.response.json().data[0].village).to.eql('Tanjung'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/destinations"
+      }
+    },
+    {
+      "name": "GET Map Markers (WGS84)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('WGS84 coordinate system', function () { pm.expect(pm.response.json().meta.coordinate_system).to.eql('WGS84'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/map-markers?category=UMKM"
+      }
+    },
+    {
+      "name": "GET Products Catalog",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Product array not empty', function () { pm.expect(pm.response.json().data.length).to.be.above(0); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/products"
+      }
+    },
+    {
+      "name": "GET Product Detail (ID=1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/products/1"
+      }
+    },
+    {
+      "name": "POST Simulate Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+              "var json = pm.response.json(); pm.environment.set('sim_order_id', json.data.order_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{wisatawan_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"umkm_merchant_id\": 1,\n  \"items\": [{ \"product_id\": 1, \"quantity\": 2 }],\n  \"payment_method\": \"SIMULATION_QRIS\"\n}"
+        },
+        "url": "{{base_url}}/api/v1/orders/simulate"
+      }
+    },
+    {
+      "name": "POST Simulate Payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Paid 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Order PAID', function () { pm.expect(pm.response.json().data.order_status).to.eql('PAID'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{wisatawan_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": {{sim_order_id}}\n}"
+        },
+        "url": "{{base_url}}/api/v1/payments/simulate-pay"
+      }
+    },
+    {
+      "name": "GET UMKM My Finances (Isolated)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Tenant isolated flag', function () { pm.expect(pm.response.json().data.tenant_isolated).to.eql(true); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{umkm_token}}" }
+        ],
+        "url": "{{base_url}}/api/v1/umkm/my-finances"
+      }
+    }
+  ]
+}

@@ -30,19 +30,18 @@
 ---
 
 ### D. Pengujian yang Dilakukan
-- Eksekusi skenario uji UAT terpandu untuk seluruh alur bisnis inti.
+- Eksekusi skenario uji UAT terpandu untuk 6 persona pengguna dalam mode **`[SIMULASI PERSONA UAT]`**, diperkuat uji HTTP otomatis `AuthAndRbacTest` (`6/6 role`) & `ApiAndIntegrationTest`.
 
 ---
 
 ### E. Expected Result
-- Penguji dapat menyelesaikan setiap tugas operasional tanpa hambatan sistemik.
-- Skor kemudahan penggunaan rata-rata > 85%.
+- Setiap persona (Wisatawan, UMKM, Pengelola, Bendahara, Pimpinan, Super Admin) dapat menjalankan tugas operasionalnya dengan batas RBAC yang tepat.
 
 ---
 
 ### F. Actual Result
-- Rata-rata skor evaluasi simulasi persona mencapai 92% (Tugas selesai dengan cepat dan intuitif).
-- Seluruh 6 skenario diterima (*Accepted with Sign-off*).
+- **Seluruh 6 skenario `[SIMULASI PERSONA UAT]` berstatus `PASS`** sesuai alur fungsional & batas akses.
+- **Catatan Kejujuran:** Tanda tangan penerimaan fisik oleh responden lapangan Pantai Jumiang (Pokdarwis & pemilik gerai UMKM Desa Tanjung) berstatus **`NOT TESTED`** (dijadwalkan saat survei lapangan lanjutan).
 
 ---
 

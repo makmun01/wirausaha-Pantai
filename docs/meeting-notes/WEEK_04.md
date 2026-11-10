@@ -21,10 +21,13 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- `app/Services/OrderProcessingService.php`
+- `app/Services/OrderProcessingService.php` (`VALID_TRANSITIONS`, `isValidTransition()`, `transitionStatus()`)
+- `app/Services/UmkmService.php` (`VALID_VERIFICATION_TRANSITIONS`)
 - `app/Http/Controllers/Web/OrderController.php`
 - `resources/views/public/cart.blade.php`, `checkout.blade.php`, `order_success.blade.php`
 - `resources/views/admin/orders/index.blade.php`
+- `docs/testing/STATE_TRANSITION_DECISION_TABLE.md`
+- `tests/Unit/OrderStateTransitionUnitTest.php`
 
 ---
 

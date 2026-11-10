@@ -20,15 +20,20 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- `docs/migration/DATA_MIGRATION_PLAN.md`
-- `docs/migration/ETL_DOCUMENTATION.md`
-- `database/jumiang_database.sql`
+- `app/Services/EtlMigrationService.php`
+- `database/migrations/2026_11_02_000008_create_migration_quarantine_logs_table.php`
+- `database/samples/raw_umkm_survey.csv`
+- `scripts/etl_import.php` & `public/index.php` (`/admin/etl` & export CSV template)
+- `tests/Unit/EtlMigrationUnitTest.php`
+- `docs/migration/DATA_MIGRATION_PLAN.md`, `ETL_DOCUMENTATION.md`, & `RECONCILIATION_AUDIT_REPORT.md`
+- `database/jumiang_database.sql` (penambahan tabel `migration_quarantine_logs`)
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Uji rekonsiliasi jumlah baris (*Row Count Reconciliation*): Data diekstrak = Data yang tersimpan di basis data target (Zero Data Loss).
-- Uji pencegahan duplikasi email pengguna dan slug produk.
+- Eksekusi `php scripts/etl_import.php --dry-run`, `--apply` (Run #1 & Run #2 idempotency), serta Unit Test `EtlMigrationUnitTest` pada `sqlite::memory:`.
+- Uji rekonsiliasi jumlah baris (*Row Count Reconciliation*): `Extracted (5) = Valid (3) + Batch Quarantined (1) + Batch Duplicates (1)` (`Zero Data Loss = PASS`).
+- Uji karantina otomatis untuk koordinat luar Pamekasan (`-6.10, 106.80`), harga negatif (`-15000`), dan nama kosong.
 
 ---
 

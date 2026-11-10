@@ -4,6 +4,22 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini dengan meng
 
 ---
 
+## [1.1.0] - 2026-11-10 (Audit RPS 16 Minggu, Penambahan Test Suite, ETL & Laporan Final)
+
+### Added
+- **Automated Test Suite (`tests/`):** Menambahkan `phpunit.xml`, `tests/bootstrap.php`, `tests/HttpClient.php`, `tests/run_all_tests.php`, 3 Unit Test classes (`FinancialBookkeepingUnitTest`, `OrderStateTransitionUnitTest`, `EtlMigrationUnitTest`), 4 Live-HTTP Feature Test classes (`AuthAndRbacTest`, `BlackBoxEpBvaTest`, `ApiAndIntegrationTest`, `SecurityOwaspTest`), koleksi Postman v2.1 (`tests/postman/`), dan Test Plan Apache JMeter Tier 1–4 (`tests/jmeter/jumiang_load_test.jmx`).
+- **REST API v1 Lengkap & Server Preview Hardening:** Menambahkan `app/Http/Controllers/Api/ApiV1Controller.php`, 7 endpoint REST API `/api/v1/*` di `routes/api.php`, router JSON `/api/v1/*`, endpoint `/health`, RBAC guard `requireRole()` (`403 Forbidden`), panel `/admin/etl`, sanitasi XSS, dan HTTP Security Headers di `public/index.php`.
+- **Modul ETL & Migrasi Survei UMKM:** Menambahkan `app/Services/EtlMigrationService.php`, migrasi `2026_11_02_000008_create_migration_quarantine_logs_table.php`, tabel `migration_quarantine_logs` (tabel ke-23 di `database/jumiang_database.sql`), `database/seeders/DatabaseSeeder.php`, berkas contoh `database/samples/raw_umkm_survey.csv`, dan utilitas CLI `scripts/etl_import.php`, `scripts/benchmark_local.php`, & `scripts/backup_verify.php`.
+- **Konfigurasi Nginx & Controller/Exception Inti:** Menambahkan `docker/nginx/default.conf` (di-copy di `Dockerfile`), `app/Http/Controllers/Controller.php`, dan `app/Exceptions/SecurityException.php`.
+- **Deliverable Lengkap RPS Minggu 03–16:** Menambahkan `BLACKBOX_EP_BVA_REPORT.md`, `STATE_TRANSITION_DECISION_TABLE.md`, `WHITE_BOX_TESTING.md`, `UTS_AUDIT_REPORT.md`, `PERFORMANCE_BASELINE_REPORT.md`, `IMPLEMENTATION_STRATEGY_PLAN.md`, `RECONCILIATION_AUDIT_REPORT.md`, `DEPLOYMENT_REPORT.md`, `PIR_AND_MAINTENANCE_PLAN.md`, `USER_MANUAL.md`, dan `FINAL_PROJECT_REPORT.md`.
+
+### Fixed & Updated
+- **Order & UMKM FSM Guard:** Menambahkan validasi transisi status (`VALID_TRANSITIONS` & rollback stok `READY_FOR_PICKUP`) pada `OrderProcessingService.php` + `OrderController.php`, serta `VALID_VERIFICATION_TRANSITIONS` pada `UmkmService.php`.
+- **DEF-AUD-001 s/d DEF-AUD-003 (`CLOSED`):** Memperbaiki referensi `\SecurityException`, mengaktifkan RBAC `403` + escaping XSS di `public/index.php`, serta memperbaiki idempotensi rekonsiliasi ETL pada eksekusi ulang database.
+- **Kepatuhan Dokumentasi ISO 29119:** Memperbarui `TEST_CASE_MATRIX.md`, `TEST_SUMMARY.md`, `SECURITY_TESTING.md`, `UAT_DOCUMENTATION.md`, `WEEK_02..16.md`, `README.md`, dan `PROJECT_CONTEXT.md` hanya berdasarkan hasil uji nyata (`19/19 PASS` suite otomatis, ETL & backup verification `PASS`, serta pelabelan jujur `NOT TESTED` untuk tool eksternal yang belum terpasang lokal).
+
+---
+
 ## [1.0.1] - 2026-11-09 (Aktivasi CI/CD GitHub Actions & Perbaikan Smoke Test)
 
 ### Added

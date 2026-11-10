@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\DB;
 
 class UmkmService
 {
+    public const VALID_VERIFICATION_TRANSITIONS = [
+        'PENDING' => ['VERIFIED', 'REJECTED'],
+        'VERIFIED' => ['SUSPENDED'],
+        'REJECTED' => ['PENDING', 'VERIFIED'],
+        'SUSPENDED' => ['VERIFIED'],
+    ];
+
     public function getVerifiedMerchants()
     {
         return UmkmMerchant::with(['products', 'user'])->where('verification_status', 'VERIFIED')->get();
@@ -52,9 +59,18 @@ class UmkmService
         });
     }
 
+    public function isValidVerificationTransition(string $currentStatus, string $targetStatus): bool
+    {
+        $allowed = self::VALID_VERIFICATION_TRANSITIONS[$currentStatus] ?? [];
+        return in_array($targetStatus, $allowed, true);
+    }
+
     public function updateVerificationStatus(int $merchantId, string $status, ?string $reason = null): bool
     {
         $merchant = UmkmMerchant::findOrFail($merchantId);
+        if ($merchant->verification_status !== $status && !$this->isValidVerificationTransition($merchant->verification_status, $status)) {
+            throw new \InvalidArgumentException("Transisi status verifikasi UMKM tidak valid: {$merchant->verification_status} -> {$status}.");
+        }
         $merchant->verification_status = $status;
         $merchant->rejection_reason = $reason;
         return $merchant->save();

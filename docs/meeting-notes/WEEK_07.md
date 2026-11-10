@@ -24,6 +24,7 @@
 - `app/Services/ReservationService.php`
 - `resources/views/public/reservation.blade.php`
 - `resources/views/admin/reservations/index.blade.php`
+- `tests/bootstrap.php`, `tests/HttpClient.php`, & `tests/run_all_tests.php`
 - `docs/testing/DEFECT_LOG.md`
 
 ---

@@ -1,0 +1,11 @@
+{
+  "id": "b7f21a11-8b42-4c6c-8114-202611100001",
+  "name": "Jumiang Local Test Environment",
+  "values": [
+    { "key": "base_url", "value": "http://127.0.0.1:18085", "enabled": true },
+    { "key": "wisatawan_token", "value": "demo-token-wisatawan", "enabled": true },
+    { "key": "umkm_token", "value": "demo-token-pelaku_umkm", "enabled": true },
+    { "key": "sim_order_id", "value": "101", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

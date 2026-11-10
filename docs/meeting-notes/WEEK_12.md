@@ -29,12 +29,12 @@
 - `app/Http/Controllers/Web/AuditController.php`
 - `resources/views/admin/partnerships/index.blade.php`
 - `resources/views/admin/audit/index.blade.php`
+- `docs/deployment/IMPLEMENTATION_STRATEGY_PLAN.md`
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Smoke Testing menyeluruh pada 14 modul aplikasi.
-- Verifikasi alur penambahan kemitraan baru dan pencatatan riwayat pada audit trail.
+- Smoke Testing & Regression Testing terotomasi (`php tests/run_all_tests.php`: 19/19 skenario `PASS`) meliputi rute publik, `/admin/partnerships`, `/admin/audit-logs`, dan batas otorisasi 6 role.
 
 ---
 

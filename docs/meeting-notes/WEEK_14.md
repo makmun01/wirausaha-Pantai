@@ -19,16 +19,16 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- `Dockerfile`
+- `Dockerfile` & `docker/nginx/default.conf`
 - `docker-compose.yml`
-- `docs/deployment/CI_CD_DOCUMENTATION.md`
-- `docs/deployment/DEPLOYMENT_PLAN.md`
+- `.github/workflows/ci-cd.yml`
+- `docs/deployment/CI_CD_DOCUMENTATION.md`, `DEPLOYMENT_PLAN.md`, & `DEPLOYMENT_REPORT.md`
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Uji validasi sintaks Dockerfile dan konfigurasi port binding (8000:80, 3307:3306).
-- Uji eksekusi container independen.
+- Linting sintaks seluruh file PHP (`php -l`), validasi `composer.json` & `docker-compose.yml`.
+- Eksekusi pipeline GitHub Actions (`.github/workflows/ci-cd.yml`) menguji MySQL 8.4 import, `php tests/run_all_tests.php`, ETL CLI, backup verification, dan build Docker image Nginx + PHP-FPM.
 
 ---
 

@@ -30,14 +30,15 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- Penyelesaian seluruh file backend, frontend, database, skrip docker, dan dokumentasi akademik.
-- Pembaruan dokumen [CHANGELOG.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/CHANGELOG.md) dan [PROJECT_CONTEXT.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/PROJECT_CONTEXT.md).
+- `scripts/backup_verify.php` (verifikasi ukuran `32502` B, SHA-256, `23` tabel DDL, `21` tabel seed, & uji integritas snapshot)
+- `docs/USER_MANUAL.md` & `docs/FINAL_PROJECT_REPORT.md`
+- Pembaruan [CHANGELOG.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/CHANGELOG.md), [PROJECT_CONTEXT.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/PROJECT_CONTEXT.md), dan [README.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/README.md).
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Demonstrasi live alur sistem dari sisi wisatawan, pedagang UMKM, bendahara, pengelola, hingga pimpinan.
-- Simulasi disaster recovery: Eksekusi backup database `jumiang_database.sql` dan verifikasi rollback versi stabil.
+- Eksekusi penuh `php tests/run_all_tests.php` (`19/19 PASS`), `php scripts/etl_import.php --dry-run` / `--apply` (`Zero Data Loss = PASS`), `php scripts/benchmark_local.php` (`0.00%` error), serta `php scripts/backup_verify.php` (`PASS`).
+- Simulasi disaster recovery: Verifikasi SHA-256 `6d06538cf67431494f1c98acd21cbda55e609348232d13f7088828aaf67371d0` berkas cadangan `database/jumiang_database.sql` (`23` tabel) dan kesiapan rollback Git.
 
 ---
 

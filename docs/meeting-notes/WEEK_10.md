@@ -23,14 +23,20 @@
 ### C. File yang Ditambah atau Diubah
 - `app/Http/Middleware/RoleMiddleware.php`
 - `app/Services/FinancialBookkeepingService.php`
+- `public/index.php` (`requireRole()`, XSS escaping `htmlspecialchars`, HTTP Security Headers)
+- `docker/nginx/default.conf` (Nginx security headers & blokir akses `.env`)
+- `tests/Feature/SecurityOwaspTest.php`
 - `docs/testing/SECURITY_TESTING.md`
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Uji injeksi SQL payload `' OR 1=1 --` pada kolom filter pencarian produk -> Kebal (PASS).
-- Uji payload `<script>alert('xss')</script>` pada input nama produk dan review -> Terescape sempurna sebagai string aman (PASS).
-- Uji Broken Access Control: User ber-role `wisatawan` mencoba memanggil URL `/admin/financial` -> Ditolak dengan HTTP 403 Forbidden (PASS).
+- Automated Feature Test `SecurityOwaspTest.php`, `AuthAndRbacTest.php`, & `ApiAndIntegrationTest.php`:
+  - Uji payload Reflected XSS `<script>alert('xss')</script>` pada `/katalog-umkm?search=...` dan `/produk/...` -> Ter-escape menjadi `&lt;script&gt;` (**PASS**).
+  - Uji Broken Access Control: Role `wisatawan` mengakses `/admin/*` dan `/api/v1/umkm/my-finances` -> HTTP `403 Forbidden` (**PASS**).
+  - Uji Unauthenticated API Guard: `POST /api/v1/orders/simulate` tanpa Bearer token -> HTTP `401 Unauthorized` (**PASS**).
+  - Audit Security Headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) & `.gitignore` `.env` (**PASS**).
+- Scan OWASP ZAP CLI eksternal: **NOT TESTED** (binary OWASP ZAP tidak terpasang lokal).
 
 ---
 

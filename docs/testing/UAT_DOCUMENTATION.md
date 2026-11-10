@@ -1,30 +1,28 @@
 # USER ACCEPTANCE TESTING (UAT)
 ## JUMIANG SMART TOURISM & UMKM
-**User Acceptance Testing Plan, Scenarios, & Sign-off Framework**
+**User Acceptance Testing Plan, Scenarios, & Simulation Matrix (Pertemuan 11)**
 
 ---
 
 ## 1. PENDEKATAN UAT (PERTEMUAN 11)
-UAT bertujuan memverifikasi apakah alur kerja sistem telah sesuai dengan ekspektasi operasional para pemangku kepentingan.
+UAT bertujuan memverifikasi kesesuaian alur kerja end-to-end 14 modul sistem terhadap kebutuhan operasional 6 pemangku kepentingan kawasan Pantai Jumiang, Desa Tanjung, Kecamatan Pademawu, Kabupaten Pamekasan.
 
-Pengujian dijalankan melalui skenario terpandu berdasarkan 6 persona pengguna:
-1. **Skenario 1 - Wisatawan:** Menjelajahi informasi Pantai Jumiang, membuka peta wisata interaktif, mencari oleh-oleh khas lorjuk, memesan produk UMKM, dan reservasi tiket.
-2. **Skenario 2 - Pelaku UMKM:** Mendaftarkan profil gerai, mengunggah produk, menerima pesanan simulasi, dan mencatat mutasi keuangan kas usaha terpisah.
-3. **Skenario 3 - Pengelola Wisata:** Memperbarui fasilitas destinasi, memverifikasi kedatangan wisatawan yang telah reservasi.
-4. **Skenario 4 - Bendahara:** Memeriksa laporan arus kas, memvalidasi setoran dan pembayaran.
-5. **Skenario 5 - Pimpinan:** Membuka dashboard eksekutif EIS untuk menganalisis tren omzet kawasan dan grafik pengunjung.
-6. **Skenario 6 - Super Admin:** Mengelola hak akses akun, meninjau audit trail, memverifikasi kelayakan mitra UMKM baru.
+*Catatan Integritas Data (Sesuai `AGENTS.md`): Karena validasi tatap muka langsung dengan pelaku UMKM dan pengelola lapangan di Pantai Jumiang dijadwalkan pada tahap implementasi pasca-rilis akademik, seluruh skenario di bawah ini dijalankan dalam mode `[SIMULASI PERSONA UAT]` menggunakan data awal `[DATA DEMO / SIMULASI]`.*
 
 ---
 
-## 2. FORMAT FORMULIR UAT & SIGN-OFF
-Setiap penguji skenario UAT mengisi formulir penerimaan:
-- **Nama Penguji / Role:**
-- **Tanggal Sesi UAT:**
-- **Butir Skenario Diuji:**
-- **Tingkat Kemudahan (Skala 1 - 5):**
-- **Kesesuaian dengan Kebutuhan (Diterima / Diterima dengan Catatan / Ditolak):**
-- **Catatan Masukan / Feedback:**
-- **Tanda Tangan Penerimaan (Sign-Off):**
+## 2. HASIL EKSEKUSI SKENARIO 6 PERSONA `[SIMULASI PERSONA UAT]`
 
-*Catatan Integritas: Jika responden riil belum tersedia, pengujian dilakukan dengan pelabelan [SIMULASI PERSONA UAT].*
+| Kode UAT | Persona Role | Alur Skenario yang Diuji | Verifikasi Teknis & HTTP | Catatan Penerimaan Simulasi | Status |
+|---|---|---|---|---|---|
+| **UAT-01** | **Wisatawan** (`wisatawan`) | Eksplorasi beranda, peta Leaflet WGS84, katalog oleh-oleh, detail `/produk/rengginang-lorjuk-super`, order simulasi API & bayar QRIS | `BlackBoxEpBvaTest` + `ApiAndIntegrationTest` + `AuthAndRbacTest` -> `200`, `201`, & `403` saat membuka `/admin/*` | Diterima (Alur belanja, filter peta, & proteksi role berjalan mulus) | **PASS** `[SIMULASI PERSONA UAT]` |
+| **UAT-02** | **Pelaku UMKM** (`pelaku_umkm`) | Akses `/admin/products`, `/admin/financial`, API `/api/v1/umkm/my-finances`, pemisahan akun `BUSINESS` vs `PERSONAL` | `AuthAndRbacTest` + `FinancialBookkeepingUnitTest` -> `200`, isolasi `403` di `/admin/umkm` | Diterima (Pembukuan usaha & tabungan pribadi terpisah tegas) | **PASS** `[SIMULASI PERSONA UAT]` |
+| **UAT-03** | **Pengelola Wisata** (`pengelola_wisata`) | Login quick-demo role `pengelola_wisata`, akses dashboard & `/admin/reservations`, peta `/peta-wisata` | `AuthAndRbacTest` -> HTTP `200` pada `/dashboard` dan `/admin/reservations` (smoke route check) | Diterima (Navigasi peta & check-in reservasi terstruktur) | **PASS** `[SIMULASI PERSONA UAT]` |
+| **UAT-04** | **Bendahara** (`bendahara`) | Login role `bendahara`, akses `/admin/financial`, `/admin/financial/profit-loss`, `/admin/reports` | `AuthAndRbacTest` -> Login & dashboard `200` | Diterima (Rekap laba rugi dan arus kas tersedia) | **PASS** `[SIMULASI PERSONA UAT]` |
+| **UAT-05** | **Pimpinan / Kepala Desa** (`pimpinan`) | Login role `pimpinan`, akses `/admin/eis` & grafik Chart.js tren omzet kawasan | `AuthAndRbacTest` -> `/demo-login?role=pimpinan` (`200`), EIS diakses | Diterima (Grafik omzet makro mudah dibaca) | **PASS** `[SIMULASI PERSONA UAT]` |
+| **UAT-06** | **Super Admin** (`super_admin`) | Akses penuh `/admin/umkm`, `/admin/partnerships`, `/admin/audit-logs`, `/admin/etl`, export CSV template | `AuthAndRbacTest::test_pelaku_umkm_and_super_admin_role_boundaries` -> seluruh rute `200` | Diterima (Kontrol verifikasi UMKM, audit, dan ETL berjalan) | **PASS** `[SIMULASI PERSONA UAT]` |
+
+---
+
+## 3. STATUS TANDA TANGAN RESPONDEN LAPANGAN RIIL
+- **Validasi Responden Fisik Pantai Jumiang (Pokdarwis & UMKM Desa Tanjung):** `NOT TESTED` (Menunggu agenda survei lapangan lanjutan untuk konversi `[DATA DEMO / SIMULASI]` ke data riil operasional).

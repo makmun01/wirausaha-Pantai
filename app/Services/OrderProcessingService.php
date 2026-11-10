@@ -11,6 +11,15 @@ use Illuminate\Support\Str;
 
 class OrderProcessingService
 {
+    public const VALID_TRANSITIONS = [
+        'PENDING' => ['PAID', 'CANCELLED'],
+        'PAID' => ['PROCESSING', 'CANCELLED'],
+        'PROCESSING' => ['READY_FOR_PICKUP', 'CANCELLED'],
+        'READY_FOR_PICKUP' => ['COMPLETED', 'CANCELLED'],
+        'COMPLETED' => [],
+        'CANCELLED' => [],
+    ];
+
     protected InventoryLedgerService $inventoryService;
     protected FinancialBookkeepingService $financialService;
 
@@ -20,6 +29,40 @@ class OrderProcessingService
     ) {
         $this->inventoryService = $inventoryService;
         $this->financialService = $financialService;
+    }
+
+    public function isValidTransition(string $currentStatus, string $targetStatus): bool
+    {
+        $allowed = self::VALID_TRANSITIONS[$currentStatus] ?? [];
+        return in_array($targetStatus, $allowed, true);
+    }
+
+    public function transitionStatus(int $orderId, string $targetStatus, int $actorUserId): Order
+    {
+        $order = Order::findOrFail($orderId);
+
+        if ($order->status === $targetStatus) {
+            return $order;
+        }
+
+        if (!$this->isValidTransition($order->status, $targetStatus)) {
+            throw new \InvalidArgumentException(
+                "Transisi status pesanan tidak valid: {$order->status} -> {$targetStatus}."
+            );
+        }
+
+        if ($targetStatus === 'PAID') {
+            return $this->confirmSimulationPayment($orderId, $actorUserId);
+        }
+
+        if ($targetStatus === 'CANCELLED') {
+            return $this->cancelOrder($orderId, $actorUserId);
+        }
+
+        $order->status = $targetStatus;
+        $order->save();
+
+        return $order;
     }
 
     public function createOrder(array $data, int $userId): Order
@@ -124,8 +167,12 @@ class OrderProcessingService
                 return $order;
             }
 
-            // If it was already paid, rollback stock
-            if ($order->status === 'PAID' || $order->status === 'PROCESSING') {
+            if ($order->status === 'COMPLETED') {
+                throw new \LogicException('Pesanan yang sudah selesai tidak dapat dibatalkan.');
+            }
+
+            // If it was already paid/processed/ready, rollback stock
+            if (in_array($order->status, ['PAID', 'PROCESSING', 'READY_FOR_PICKUP'], true)) {
                 foreach ($order->items as $item) {
                     $this->inventoryService->recordStockMutation(
                         $item->product_id,

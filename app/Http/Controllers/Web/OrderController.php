@@ -41,13 +41,10 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $oldStatus = $order->status;
 
-        if ($request->status === 'CANCELLED') {
-            $this->orderService->cancelOrder($id, Auth::id());
-        } elseif ($request->status === 'PAID' && $oldStatus === 'PENDING') {
-            $this->orderService->confirmSimulationPayment($id, Auth::id());
-        } else {
-            $order->status = $request->status;
-            $order->save();
+        try {
+            $this->orderService->transitionStatus((int) $id, $request->status, Auth::id());
+        } catch (\InvalidArgumentException|\LogicException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
         AuditTrailService::log('ORDER_STATUS_UPDATE', 'Order', $id, ['status' => $oldStatus], ['status' => $request->status]);

@@ -19,13 +19,13 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- Seluruh modul web publik dan dashboard administratif.
-- Pembaruan dokumen ringkasan pengujian `docs/testing/TEST_SUMMARY.md`.
+- Seluruh modul web publik dan dashboard administratif (`public/index.php` & `app/`).
+- Pembaruan [docs/testing/TEST_SUMMARY.md](../testing/TEST_SUMMARY.md), [docs/testing/TEST_CASE_MATRIX.md](../testing/TEST_CASE_MATRIX.md), dan [docs/testing/UTS_AUDIT_REPORT.md](../testing/UTS_AUDIT_REPORT.md).
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Regression Testing menyeluruh pada 15 skenario kasus uji kritis di [TEST_CASE_MATRIX.md](file:///c:/Users/core/Documents/twsting%20ERP%20Pariwisata/docs/testing/TEST_CASE_MATRIX.md).
+- Regression Testing menyeluruh menggunakan `php tests/run_all_tests.php` (`10` Unit Test + `9` Feature HTTP Test) serta audit kepatuhan skenario pada [TEST_CASE_MATRIX.md](../testing/TEST_CASE_MATRIX.md).
 - Verifikasi alur navigasi dari beranda publik hingga panel admin multi-role.
 
 ---
@@ -37,8 +37,8 @@
 ---
 
 ### F. Actual Result
-- Seluruh 15 skenario uji lulus (Pass Rate: 100%).
-- Demonstrasi modul Fase 1 berjalan lancar.
+- Eksekusi suite otomatis mencatat **19/19 PASS (`0` FAIL)** dalam `993.32 ms` (17/21 skenario matriks inti `PASS`, 4 skenario yang membutuhkan `vendor/` DB penuh berstatus `NOT TESTED`).
+- Defect temuan audit (`DEF-CI-001`, `DEF-AUD-001`, `DEF-AUD-002`) ditutup berstatus `CLOSED` di `DEFECT_LOG.md`.
 
 ---
 

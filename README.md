@@ -6,7 +6,7 @@
 [![Framework](https://img.shields.io/badge/Framework-Laravel-red.svg)](https://laravel.com)
 [![Architecture](https://img.shields.io/badge/Architecture-Modular%20Monolith-green.svg)](#arsitektur-sistem)
 [![GIS](https://img.shields.io/badge/GIS-Leaflet.js%20%7C%20OSM-brightgreen.svg)](#geographic-information-system)
-[![Status](https://img.shields.io/badge/Project%20Status-Week%2001%20Planning-orange.svg)](#status-proyek)
+[![Status](https://img.shields.io/badge/Project%20Status-Completed%20(16%20Weeks%20RPS)-brightgreen.svg)](#status-proyek)
 
 ---
 
@@ -74,24 +74,36 @@ docs/
 ├── ROADMAP_16_WEEKS.md            # Roadmap komprehensif 16 pertemuan kuliah sesuai RPS MANPRO
 ├── CHANGELOG.md                   # Log kronologis perubahan versi aplikasi
 │
+├── USER_MANUAL.md                 # Buku Panduan Pengguna 6 Role (Minggu 16)
+├── FINAL_PROJECT_REPORT.md        # Laporan Akhir Proyek UAS & Backup Check (Minggu 16)
+│
 ├── testing/                       # Dokumentasi Pengujian Sistem (STLC & ISO 29119)
 │   ├── TEST_PLAN.md               # Master Test Plan
-│   ├── TEST_CASE_MATRIX.md        # Matriks Test Case terperinci seluruh modul
+│   ├── TEST_CASE_MATRIX.md        # Matriks Test Case & Status Realisasi Nyata
 │   ├── DEFECT_LOG.md              # Log pencatatan dan siklus hidup bug/defect
 │   ├── TEST_SUMMARY.md            # Rekapitulasi hasil pengujian berkala
-│   ├── API_TESTING.md             # Dokumentasi pengujian REST API & Postman
-│   ├── PERFORMANCE_TESTING.md     # Perencanaan & hasil pengujian beban Apache JMeter
-│   ├── SECURITY_TESTING.md        # Laporan pengujian keamanan OWASP Top 10
-│   └── UAT_DOCUMENTATION.md       # Skenario & lembar User Acceptance Testing
+│   ├── BLACKBOX_EP_BVA_REPORT.md  # Equivalence Partitioning & BVA (Minggu 03)
+│   ├── STATE_TRANSITION_DECISION_TABLE.md # Decision Table & FSM (Minggu 04)
+│   ├── WHITE_BOX_TESTING.md       # CFG & Cyclomatic Complexity McCabe (Minggu 05)
+│   ├── API_TESTING.md             # Dokumentasi REST API v1 & Postman Collection
+│   ├── UTS_AUDIT_REPORT.md        # Audit & Regression Report (Minggu 08)
+│   ├── PERFORMANCE_TESTING.md     # Rencana uji beban Apache JMeter
+│   ├── PERFORMANCE_BASELINE_REPORT.md # Hasil benchmark lokal aktual (Minggu 09)
+│   ├── SECURITY_TESTING.md        # Pengujian & Mitigasi OWASP Top 10 (Minggu 10)
+│   └── UAT_DOCUMENTATION.md       # Skenario UAT 6 Persona [SIMULASI PERSONA UAT]
 │
-├── migration/                     # Perencanaan Migrasi & ETL Data
+├── migration/                     # Perencanaan & Rekonsiliasi Migrasi ETL Data
 │   ├── DATA_MIGRATION_PLAN.md     # Strategi ekstraksi dan validasi data UMKM/Wisata
-│   └── ETL_DOCUMENTATION.md       # Dokumentasi skrip transformasi data
+│   ├── ETL_DOCUMENTATION.md       # Spesifikasi mapping & karantina anomali
+│   └── RECONCILIATION_AUDIT_REPORT.md # Laporan audit aktual ETL (Minggu 13)
 │
-├── deployment/                    # Infrastruktur & Operasional
+├── deployment/                    # Infrastruktur, Rollout & PIR
+│   ├── IMPLEMENTATION_STRATEGY_PLAN.md # Strategi Pilot Rollout & Smoke Test (Minggu 12)
 │   ├── DEPLOYMENT_PLAN.md         # Prosedur deployment ke Production/Staging VPS
+│   ├── DEPLOYMENT_REPORT.md       # Laporan Docker Nginx & CI/CD (Minggu 14)
 │   ├── CI_CD_DOCUMENTATION.md     # Konfigurasi pipeline otomatis GitHub Actions
-│   └── BACKUP_ROLLBACK.md         # Prosedur pemulihan bencana (Disaster Recovery)
+│   ├── BACKUP_ROLLBACK.md         # Prosedur pemulihan bencana (Disaster Recovery)
+│   └── PIR_AND_MAINTENANCE_PLAN.md # Post-Implementation Review & SLA (Minggu 15)
 │
 └── meeting-notes/                 # Catatan Progres & Bukti Pertemuan 1 - 16
     ├── WEEK_01.md                 # Perencanaan, V-Model, dan Inisiasi SQA
@@ -101,13 +113,27 @@ docs/
 
 ---
 
-## 6. Prasyarat Lingkungan Pengembangan (Prerequisites)
-Sebelum menjalankan instalasi Laravel, pastikan perangkat pengembang telah dilengkapi:
-1. **PHP:** Versi 8.2 atau 8.3+ dengan ekstensi aktif: `php-pdo`, `php-mysql`, `php-mbstring`, `php-xml`, `php-curl`, `php-gd`, `php-zip`.
-2. **Composer:** Versi 2.6+ (Dependency Manager PHP).
-3. **Node.js & NPM:** Node.js v18+ atau v20+ LTS dan NPM v9+.
-4. **Database Server:** MySQL 8.4 atau MariaDB 10.4+ (misal via XAMPP/Laragon atau Docker).
-5. **Git:** Versi 2.40+ untuk version control dan integrasi CI/CD.
+## 6. Menjalankan & Menguji Sistem Secara Lokal
+
+### A. Server Preview Instan + Automated Test Suite (Tanpa `vendor/`)
+```bash
+# Jalankan server preview lokal (PHP 8.0+ / PHP 8.3+)
+php -S 127.0.0.1:8000 -t public
+
+# Jalankan seluruh 19 automated Unit & Feature HTTP Test
+php tests/run_all_tests.php
+
+# Jalankan CLI ETL CSV Migration (Dry-Run & Apply) & Verifikasi Backup DR
+php scripts/etl_import.php --dry-run
+php scripts/etl_import.php --apply
+php scripts/backup_verify.php
+```
+
+### B. Prasyarat Lingkungan Produksi (Laravel & Docker)
+1. **PHP:** Versi 8.2 atau 8.3+ (pratinjau lokal mendukung PHP 8.0+) dengan ekstensi aktif: `php-pdo`, `php-pdo-sqlite`, `php-pdo-mysql`, `php-mbstring`, `php-xml`, `php-curl`, `php-gd`, `php-zip`.
+2. **Composer:** Versi 2.6+ (Dependency Manager PHP) — opsional jika hanya menjalankan preview & CLI test suite.
+3. **Database Server:** MySQL 8.4 atau MariaDB 10.4+ (misal via XAMPP/Laragon atau `docker compose up -d`).
+4. **Git & Docker:** Untuk version control, Nginx container (`docker/nginx/default.conf`), dan GitHub Actions CI/CD.
 
 ---
 

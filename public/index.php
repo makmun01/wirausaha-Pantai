@@ -26,9 +26,14 @@ if (file_exists(__DIR__.'/../vendor/autoload.php')) {
 
 // 2. Standalone Lightweight Runner (Zero-Dependency Preview & Development Mode)
 // Enables running immediately via: C:\xampp\php\php.exe -S localhost:8000 -t public
+header('X-Frame-Options: SAMEORIGIN');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
 session_start();
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 // Helper function to render blade-like templates or raw HTML views
 function getActiveRole() {
@@ -39,7 +44,32 @@ function getUserName() {
     return $_SESSION['user_name'] ?? 'Wisatawan Pengunjung';
 }
 
-// Simple Router
+function requireRole(array $allowedRoles) {
+    $role = getActiveRole();
+    if ($role === 'super_admin' || in_array($role, $allowedRoles, true)) {
+        return;
+    }
+    renderForbidden($role, $allowedRoles);
+    exit;
+}
+
+// Health check & REST API v1 JSON Router
+if ($uri === '/health') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'status' => 'ok',
+        'app' => 'Jumiang Smart Tourism & UMKM',
+        'mode' => 'standalone-preview',
+    ]);
+    exit;
+}
+
+if (str_starts_with($uri, '/api/v1/')) {
+    handleApiRequest($uri, $method);
+    exit;
+}
+
+// Simple Web Router
 if ($uri === '/' || $uri === '') {
     renderPublicHome();
 } elseif ($uri === '/tentang-jumiang') {
@@ -62,34 +92,55 @@ if ($uri === '/' || $uri === '') {
     renderRegister();
 } elseif ($uri === '/dashboard') {
     renderDashboard();
+} elseif ($uri === '/admin/dashboard') {
+    requireRole(['super_admin', 'pengelola_wisata', 'pelaku_umkm', 'bendahara', 'pimpinan']);
+    renderDashboard();
 } elseif ($uri === '/admin/products') {
+    requireRole(['pelaku_umkm', 'super_admin']);
     renderAdminProducts();
 } elseif ($uri === '/admin/inventory') {
+    requireRole(['pelaku_umkm', 'super_admin']);
     renderAdminInventory();
 } elseif ($uri === '/admin/financial') {
+    requireRole(['pelaku_umkm', 'bendahara', 'super_admin']);
     renderAdminFinancial();
 } elseif ($uri === '/admin/financial/profit-loss') {
+    requireRole(['pelaku_umkm', 'bendahara', 'super_admin']);
     renderAdminProfitLoss();
 } elseif ($uri === '/admin/orders') {
+    requireRole(['pelaku_umkm', 'pengelola_wisata', 'super_admin']);
     renderAdminOrders();
 } elseif ($uri === '/admin/reservations') {
+    requireRole(['pengelola_wisata', 'super_admin']);
     renderAdminReservations();
 } elseif ($uri === '/admin/umkm') {
+    requireRole(['super_admin']);
     renderAdminUmkm();
 } elseif ($uri === '/admin/partnerships') {
+    requireRole(['super_admin']);
     renderAdminPartnerships();
 } elseif ($uri === '/admin/eis') {
+    requireRole(['pimpinan', 'bendahara', 'super_admin']);
     renderAdminEis();
 } elseif ($uri === '/admin/reports') {
+    requireRole(['pimpinan', 'bendahara', 'super_admin']);
     renderAdminReports();
 } elseif ($uri === '/admin/audit-logs') {
+    requireRole(['super_admin']);
     renderAdminAudit();
+} elseif ($uri === '/admin/etl') {
+    requireRole(['super_admin']);
+    renderAdminEtl();
 } elseif ($uri === '/logout') {
     session_destroy();
     header('Location: /');
     exit;
 } elseif ($uri === '/demo-login') {
     $role = $_GET['role'] ?? 'super_admin';
+    $allowedRoles = ['super_admin', 'pengelola_wisata', 'pelaku_umkm', 'bendahara', 'pimpinan', 'wisatawan'];
+    if (!in_array($role, $allowedRoles, true)) {
+        $role = 'wisatawan';
+    }
     $_SESSION['role'] = $role;
     $_SESSION['user_name'] = match($role) {
         'super_admin' => 'Administrator Jumiang',
@@ -288,6 +339,12 @@ HTML;
 }
 
 function renderPublicCatalog() {
+    $search = trim((string) ($_GET['search'] ?? ''));
+    $safeSearch = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
+    $searchBanner = $search !== ''
+        ? "<div class='alert alert-info py-2 small'>Hasil pencarian untuk: <strong>{$safeSearch}</strong></div>"
+        : '';
+
     renderLayoutHeader("Marketplace Produk UMKM");
     echo <<<HTML
     <div class="container py-5">
@@ -295,12 +352,13 @@ function renderPublicCatalog() {
             <h2 class="fw-bold text-primary brand-font mb-0">Etalase Digital Produk UMKM Jumiang</h2>
             <span class="badge bg-warning text-dark"><i class="bi bi-shield-check"></i> TRANSAKSI SIMULASI</span>
         </div>
+        {$searchBanner}
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="card card-custom p-3 h-100">
                     <div class="bg-light p-4 text-center rounded mb-3"><i class="bi bi-box-seam display-4 text-primary"></i></div>
                     <span class="badge bg-info text-dark align-self-start mb-2">Kuliner & Oleh-Oleh</span>
-                    <h5 class="fw-bold mb-1">Rengginang Lorjuk Super</h5>
+                    <h5 class="fw-bold mb-1"><a href="/produk/rengginang-lorjuk-super" class="text-decoration-none text-dark">Rengginang Lorjuk Super</a></h5>
                     <small class="text-muted mb-2">Sentra Olahan Bu Maryam</small>
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
                         <strong class="text-primary fs-5">Rp 35.000</strong>
@@ -312,7 +370,7 @@ function renderPublicCatalog() {
                 <div class="card card-custom p-3 h-100">
                     <div class="bg-light p-4 text-center rounded mb-3"><i class="bi bi-box-seam display-4 text-primary"></i></div>
                     <span class="badge bg-info text-dark align-self-start mb-2">Kuliner & Oleh-Oleh</span>
-                    <h5 class="fw-bold mb-1">Keripik Ikan Teri Krispi</h5>
+                    <h5 class="fw-bold mb-1"><a href="/produk/keripik-ikan-teri-krispi" class="text-decoration-none text-dark">Keripik Ikan Teri Krispi</a></h5>
                     <small class="text-muted mb-2">Sentra Olahan Bu Maryam</small>
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
                         <strong class="text-primary fs-5">Rp 20.000</strong>
@@ -324,7 +382,7 @@ function renderPublicCatalog() {
                 <div class="card card-custom p-3 h-100">
                     <div class="bg-light p-4 text-center rounded mb-3"><i class="bi bi-palette display-4 text-primary"></i></div>
                     <span class="badge bg-primary text-white align-self-start mb-2">Batik & Busana</span>
-                    <h5 class="fw-bold mb-1">Kain Batik Tulis Motif Bahari</h5>
+                    <h5 class="fw-bold mb-1"><a href="/produk/kain-batik-tulis-motif-bahari" class="text-decoration-none text-dark">Kain Batik Tulis Motif Bahari</a></h5>
                     <small class="text-muted mb-2">Batik Pesisir Tanjung</small>
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
                         <strong class="text-primary fs-5">Rp 175.000</strong>
@@ -581,6 +639,7 @@ function renderDashboard() {
                 <a href="/admin/eis" class="btn btn-sm btn-primary rounded-pill">EIS Analytics</a>
                 <a href="/admin/reports" class="btn btn-sm btn-secondary rounded-pill">Laporan</a>
                 <a href="/admin/audit-logs" class="btn btn-sm btn-secondary rounded-pill">Audit Trail</a>
+                <a href="/admin/etl" class="btn btn-sm btn-outline-dark rounded-pill">ETL Import/Export CSV</a>
             </div>
         </div>
 
@@ -851,4 +910,259 @@ function renderAdminAudit() {
     </div>
 HTML;
     renderLayoutFooter();
+}
+
+function renderForbidden(string $activeRole, array $allowedRoles) {
+    http_response_code(403);
+    $safeRole = htmlspecialchars($activeRole, ENT_QUOTES, 'UTF-8');
+    $safeAllowed = htmlspecialchars(implode(', ', $allowedRoles), ENT_QUOTES, 'UTF-8');
+    renderLayoutHeader("403 Akses Ditolak");
+    echo <<<HTML
+    <div class="container py-5">
+        <div class="card card-custom p-5 mx-auto text-center" style="max-width: 560px;">
+            <span class="badge bg-danger align-self-center mb-3 px-3 py-2">HTTP 403 FORBIDDEN</span>
+            <h3 class="fw-bold text-dark mb-2">Akses Ditolak (RBAC Guard)</h3>
+            <p class="text-muted mb-3">Role aktif Anda (<strong>{$safeRole}</strong>) tidak memiliki izin untuk mengakses modul ini. Role yang diizinkan: <code>{$safeAllowed}</code>.</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="/dashboard" class="btn btn-ocean rounded-pill px-4">Kembali ke Dashboard</a>
+                <a href="/login" class="btn btn-outline-secondary rounded-pill px-4">Ganti Role Demo</a>
+            </div>
+        </div>
+    </div>
+HTML;
+    renderLayoutFooter();
+}
+
+function renderAdminEtl() {
+    require_once __DIR__ . '/../app/Services/EtlMigrationService.php';
+    $sampleCsv = __DIR__ . '/../database/samples/raw_umkm_survey.csv';
+
+    if (isset($_GET['download']) && $_GET['download'] === 'csv' && is_file($sampleCsv)) {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="raw_umkm_survey.csv"');
+        readfile($sampleCsv);
+        exit;
+    }
+
+    $etl = new \App\Services\EtlMigrationService();
+    $report = $etl->processUmkmSurveyCsv($sampleCsv, null, true);
+
+    renderLayoutHeader("ETL Data Migration & CSV");
+    $zeroBadge = $report['zero_data_loss']
+        ? '<span class="badge bg-success">PASS (Zero Data Loss)</span>'
+        : '<span class="badge bg-danger">FAIL</span>';
+
+    echo <<<HTML
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-0">Modul Import / Export CSV & ETL Lapangan</h3>
+                <small class="text-muted">Extract - Transform - Load & Quarantine Reconciliation (Minggu 13)</small>
+            </div>
+            <div>
+                <a href="/admin/etl?download=csv" class="btn btn-success btn-sm rounded-pill px-3"><i class="bi bi-download me-1"></i> Export Template CSV</a>
+                <a href="/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Dashboard</a>
+            </div>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card card-custom p-3 bg-white"><small class="text-muted">Diekstrak</small><h4 class="fw-bold text-primary mb-0">{$report['extracted_rows']} Baris</h4></div></div>
+            <div class="col-md-3"><div class="card card-custom p-3 bg-white"><small class="text-muted">Valid & Bersih</small><h4 class="fw-bold text-success mb-0">{$report['valid_transformed_rows']} Baris</h4></div></div>
+            <div class="col-md-3"><div class="card card-custom p-3 bg-white"><small class="text-muted">Duplikat Dilewati</small><h4 class="fw-bold text-warning mb-0">{$report['duplicates_skipped']} Baris</h4></div></div>
+            <div class="col-md-3"><div class="card card-custom p-3 bg-white"><small class="text-muted">Karantina Anomali</small><h4 class="fw-bold text-danger mb-0">{$report['quarantined_rows']} Baris</h4></div></div>
+        </div>
+        <div class="card card-custom p-4 bg-white mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Rekonsiliasi Sumber ({$report['source_file']})</h6>
+                {$zeroBadge}
+            </div>
+            <p class="small text-muted mb-0">Normalisasi nomor telepon ke <code>+62</code>, pembersihan format Rupiah, validasi koordinat WGS84 Pamekasan (-7.5 s/d -7.0, 113.3 s/d 113.8), serta karantina otomatis baris tidak valid.</p>
+        </div>
+    </div>
+HTML;
+    renderLayoutFooter();
+}
+
+function handleApiRequest(string $uri, string $method) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $markers = [
+        ['id' => 1, 'category' => 'WISATA', 'title' => 'Puncak Tebing Karang Jumiang', 'description' => 'Spot pemandangan laut dari atas tebing karang tinggi.', 'latitude' => -7.228912, 'longitude' => 113.538120, 'icon_type' => 'camera'],
+        ['id' => 2, 'category' => 'WISATA', 'title' => 'Sunset Point Pantai Jumiang', 'description' => 'Titik menikmati matahari terbenam terbaik di tebing selatan.', 'latitude' => -7.229450, 'longitude' => 113.537540, 'icon_type' => 'sun'],
+        ['id' => 3, 'category' => 'UMKM', 'title' => 'Gerai Sentra Lorjuk Bu Maryam', 'description' => 'Pusat oleh-oleh rengginang lorjuk, keripik ikan, dan terasi khas Jumiang.', 'latitude' => -7.227800, 'longitude' => 113.536900, 'icon_type' => 'shop'],
+        ['id' => 4, 'category' => 'UMKM', 'title' => 'Galeri Batik Pesisir Tanjung', 'description' => 'Kain batik tulis corak bahari khas nelayan Desa Tanjung.', 'latitude' => -7.227200, 'longitude' => 113.536100, 'icon_type' => 'palette'],
+        ['id' => 5, 'category' => 'HOMESTAY', 'title' => 'Homestay Bahari Bu Sugiarti', 'description' => 'Penginapan tepi pantai berfasilitas lengkap.', 'latitude' => -7.226500, 'longitude' => 113.535800, 'icon_type' => 'home'],
+        ['id' => 6, 'category' => 'FASILITAS', 'title' => 'Musholla Nurul Bahari & Toilet Umum', 'description' => 'Fasilitas ibadah dan kamar bilas air tawar.', 'latitude' => -7.228100, 'longitude' => 113.537300, 'icon_type' => 'life-preserver'],
+        ['id' => 7, 'category' => 'PARKIR', 'title' => 'Area Parkir Utama Wisata Pantai Jumiang', 'description' => 'Kapasitas muat 50 mobil dan 200 sepeda motor.', 'latitude' => -7.226900, 'longitude' => 113.536500, 'icon_type' => 'truck'],
+    ];
+
+    $products = [
+        1 => ['id' => 1, 'umkm_merchant_id' => 1, 'category_id' => 1, 'name' => 'Rengginang Lorjuk Super Khas Jumiang', 'slug' => 'rengginang-lorjuk-super', 'price' => 35000, 'stock' => 45, 'unit' => 'bungkus'],
+        2 => ['id' => 2, 'umkm_merchant_id' => 1, 'category_id' => 1, 'name' => 'Keripik Ikan Teri Krispi Gurih', 'slug' => 'keripik-ikan-teri-krispi', 'price' => 20000, 'stock' => 30, 'unit' => 'bungkus'],
+        3 => ['id' => 3, 'umkm_merchant_id' => 1, 'category_id' => 1, 'name' => 'Terasi Asli Tanjung Madura (Super)', 'slug' => 'terasi-asli-tanjung', 'price' => 15000, 'stock' => 60, 'unit' => 'pcs'],
+        4 => ['id' => 4, 'umkm_merchant_id' => 2, 'category_id' => 2, 'name' => 'Kain Batik Tulis Motif Bahari Pamekasan', 'slug' => 'kain-batik-tulis-motif-bahari', 'price' => 175000, 'stock' => 8, 'unit' => 'lembar'],
+        5 => ['id' => 5, 'umkm_merchant_id' => 3, 'category_id' => 4, 'name' => 'Sewa Kamar Homestay Standard View Laut', 'slug' => 'sewa-kamar-homestay', 'price' => 250000, 'stock' => 4, 'unit' => 'malam'],
+    ];
+
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $bearerRole = null;
+    if (preg_match('/^Bearer\s+demo-token-(.+)$/i', trim($authHeader), $m)) {
+        $bearerRole = $m[1];
+    }
+    $apiRole = $bearerRole ?? ($_SESSION['role'] ?? null);
+
+    if ($uri === '/api/v1/destinations' && $method === 'GET') {
+        echo json_encode([
+            'status' => 'success',
+            'data' => [[
+                'id' => 1,
+                'name' => 'Pantai Jumiang Bahari',
+                'slug' => 'pantai-jumiang-bahari',
+                'village' => 'Tanjung',
+                'district' => 'Pademawu',
+                'regency' => 'Pamekasan',
+                'operating_hours' => '06:00 - 18:00 WIB',
+                'ticket_price_demo' => 10000,
+                'is_demo_data' => true,
+            ]],
+        ]);
+        return;
+    }
+
+    if ($uri === '/api/v1/map-markers' && $method === 'GET') {
+        $cat = strtoupper((string) ($_GET['category'] ?? 'ALL'));
+        $filtered = ($cat === '' || $cat === 'ALL')
+            ? $markers
+            : array_values(array_filter($markers, fn ($m) => $m['category'] === $cat));
+
+        echo json_encode([
+            'status' => 'success',
+            'data' => $filtered,
+            'meta' => [
+                'center' => [-7.228912, 113.538120],
+                'default_zoom' => 15,
+                'coordinate_system' => 'WGS84',
+            ],
+        ]);
+        return;
+    }
+
+    if ($uri === '/api/v1/products' && $method === 'GET') {
+        $catId = isset($_GET['category_id']) ? (int) $_GET['category_id'] : null;
+        $list = array_values($products);
+        if ($catId) {
+            $list = array_values(array_filter($list, fn ($p) => $p['category_id'] === $catId));
+        }
+        echo json_encode(['status' => 'success', 'data' => $list]);
+        return;
+    }
+
+    if (preg_match('#^/api/v1/products/(\d+)$#', $uri, $m) && $method === 'GET') {
+        $id = (int) $m[1];
+        if (!isset($products[$id])) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan.']);
+            return;
+        }
+        echo json_encode(['status' => 'success', 'data' => $products[$id]]);
+        return;
+    }
+
+    if ($uri === '/api/v1/orders/simulate' && $method === 'POST') {
+        if ($apiRole === null) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthenticated. Sertakan Bearer token atau sesi login.']);
+            return;
+        }
+        $payload = json_decode((string) file_get_contents('php://input'), true) ?: [];
+        $items = $payload['items'] ?? [];
+        if (empty($items) || !is_array($items)) {
+            http_response_code(422);
+            echo json_encode(['status' => 'error', 'message' => 'Field items wajib diisi.']);
+            return;
+        }
+        $total = 0;
+        foreach ($items as $item) {
+            $pid = (int) ($item['product_id'] ?? 0);
+            $qty = (int) ($item['quantity'] ?? 0);
+            if (!isset($products[$pid]) || $qty < 1 || $qty > $products[$pid]['stock']) {
+                http_response_code(422);
+                echo json_encode(['status' => 'error', 'message' => 'Produk tidak valid atau stok tidak mencukupi.']);
+                return;
+            }
+            $total += $products[$pid]['price'] * $qty;
+        }
+        http_response_code(201);
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'order_id' => 101,
+                'invoice_no' => 'INV-JMI-' . date('Ymd') . '-SIM',
+                'total_amount' => $total,
+                'order_status' => 'PENDING',
+                'payment_method' => $payload['payment_method'] ?? 'SIMULATION_QRIS',
+                'payment_status' => 'UNPAID',
+                'is_demo_gateway' => true,
+            ],
+        ]);
+        return;
+    }
+
+    if ($uri === '/api/v1/payments/simulate-pay' && $method === 'POST') {
+        if ($apiRole === null) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthenticated.']);
+            return;
+        }
+        $payload = json_decode((string) file_get_contents('php://input'), true) ?: [];
+        if (empty($payload['order_id'])) {
+            http_response_code(422);
+            echo json_encode(['status' => 'error', 'message' => 'order_id wajib diisi.']);
+            return;
+        }
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'order_id' => (int) $payload['order_id'],
+                'order_status' => 'PAID',
+                'payment_status' => 'PAID',
+                'inventory_deducted' => true,
+                'financial_ledger_recorded' => true,
+                'account_type' => 'BUSINESS',
+            ],
+        ]);
+        return;
+    }
+
+    if ($uri === '/api/v1/umkm/my-finances' && $method === 'GET') {
+        if ($apiRole === null) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthenticated.']);
+            return;
+        }
+        if (!in_array($apiRole, ['pelaku_umkm', 'super_admin'], true)) {
+            http_response_code(403);
+            echo json_encode(['status' => 'error', 'message' => 'Forbidden: Akses buku kas khusus Pelaku UMKM.']);
+            return;
+        }
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'umkm_merchant_id' => 1,
+                'tenant_isolated' => true,
+                'accounts' => [
+                    ['account_name' => 'Kas Operasional Usaha Lorjuk', 'account_type' => 'BUSINESS', 'current_balance' => 1525000.00],
+                    ['account_name' => 'Tabungan Rumah Tangga Pribadi Bu Maryam', 'account_type' => 'PERSONAL', 'current_balance' => 500000.00],
+                ],
+                'profit_loss' => [
+                    'total_income' => 925000.00,
+                    'total_expense' => 400000.00,
+                    'net_profit' => 525000.00,
+                ],
+            ],
+        ]);
+        return;
+    }
+
+    http_response_code(404);
+    echo json_encode(['status' => 'error', 'message' => 'API endpoint not found.']);
 }

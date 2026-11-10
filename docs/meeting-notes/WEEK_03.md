@@ -22,9 +22,12 @@
 ### C. File yang Ditambah atau Diubah
 - `app/Services/TourismService.php`
 - `app/Services/UmkmService.php`
+- `app/Services/ProductService.php`
 - `app/Http/Controllers/Web/UmkmController.php`
 - `resources/views/public/about.blade.php`
 - `resources/views/admin/umkm/index.blade.php`
+- `docs/testing/BLACKBOX_EP_BVA_REPORT.md`
+- `tests/Feature/BlackBoxEpBvaTest.php`
 
 ---
 

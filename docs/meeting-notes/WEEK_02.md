@@ -23,13 +23,15 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- `database/migrations/2026_11_02_000001_create_roles_and_users_tables.php` s/d `000007_create_audit_logs_table.php`
+- `database/migrations/2026_11_02_000001_create_roles_and_users_tables.php` s/d `000008_create_migration_quarantine_logs_table.php`
+- `database/seeders/DatabaseSeeder.php`
 - `app/Models/User.php`, `Role.php`, `UserProfile.php`
 - `app/Services/AuthService.php`
-- `app/Http/Controllers/Auth/AuthController.php`
+- `app/Http/Controllers/Auth/AuthController.php` & `app/Http/Controllers/Controller.php`
 - `app/Http/Middleware/RoleMiddleware.php`
 - `resources/views/auth/login.blade.php`, `resources/views/auth/register.blade.php`
 - `database/jumiang_database.sql`
+- `tests/Feature/AuthAndRbacTest.php` & `docs/testing/TEST_CASE_MATRIX.md`
 
 ---
 

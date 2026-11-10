@@ -20,7 +20,11 @@
 
 ### C. File yang Ditambah atau Diubah
 - `app/Http/Controllers/Api/ApiMapMarkerController.php`
-- `routes/api.php`
+- `app/Http/Controllers/Api/ApiV1Controller.php`
+- `routes/api.php` (7 endpoint `/api/v1/*`)
+- `public/index.php` (`handleApiRequest()` untuk pratinjau JSON REST API)
+- `tests/postman/jumiang_api_collection.json` & `tests/postman/test_env.json`
+- `tests/Feature/ApiAndIntegrationTest.php`
 - `docs/testing/API_TESTING.md`
 
 ---

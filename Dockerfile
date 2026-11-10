@@ -20,6 +20,10 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
+# Configure Nginx for PHP-FPM
+RUN mkdir -p /run/nginx
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\SecurityException;
 use App\Models\FinancialAccount;
 use App\Models\FinancialTransaction;
 use App\Models\FinancialCategory;
@@ -17,7 +18,7 @@ class FinancialBookkeepingService
 
             // Security check: Ensure account belongs to the declared merchant
             if ($account->umkm_merchant_id != $data['umkm_merchant_id']) {
-                throw new \SecurityException("Pelanggaran isolasi data: Rekening bukan milik merchant ini.");
+                throw new SecurityException("Pelanggaran isolasi data: Rekening bukan milik merchant ini.");
             }
 
             $amount = (float) $data['amount'];

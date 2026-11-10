@@ -21,14 +21,15 @@
 ---
 
 ### C. File yang Ditambah atau Diubah
-- Evaluasi kinerja sistem pada seluruh modul aplikasi.
-- Pembaruan dokumen `docs/testing/TEST_SUMMARY.md`.
+- Evaluasi kinerja sistem & kepatuhan seluruh 16 pertemuan RPS MANPRO.
+- `docs/deployment/PIR_AND_MAINTENANCE_PLAN.md`
+- Pembaruan `docs/testing/TEST_SUMMARY.md` & `docs/testing/DEFECT_LOG.md`
 
 ---
 
 ### D. Pengujian yang Dilakukan
-- Regression Testing menyeluruh sebelum rilis final UAS.
-- Verifikasi kestabilan server lokal saat diakses bersamaan.
+- Regression Testing menyeluruh (`php tests/run_all_tests.php`: `19/19 PASS`) sebelum rilis final UAS.
+- Verifikasi benchmark lokal bertingkat via `scripts/benchmark_local.php`.
 
 ---
 

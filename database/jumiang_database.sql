@@ -11,6 +11,7 @@ USE `jumiang_tourism`;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop tables if exist
+DROP TABLE IF EXISTS `migration_quarantine_logs`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `partnerships`;
 DROP TABLE IF EXISTS `reservations`;
@@ -379,6 +380,18 @@ CREATE TABLE `audit_logs` (
   CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   INDEX `idx_audit_entity` (`entity_type`, `entity_id`),
   INDEX `idx_audit_time` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 23. MIGRATION_QUARANTINE_LOGS (ETL Data Anomaly Quarantine)
+CREATE TABLE `migration_quarantine_logs` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `source_file` VARCHAR(150) NOT NULL,
+  `row_number` INT UNSIGNED NOT NULL,
+  `raw_payload` JSON NOT NULL,
+  `error_reason` TEXT NOT NULL,
+  `resolution_status` ENUM('QUARANTINED', 'RESOLVED', 'IGNORED') NOT NULL DEFAULT 'QUARANTINED',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================================================
