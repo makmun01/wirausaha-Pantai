@@ -207,10 +207,10 @@ class EtlMigrationService
         if ($pdo !== null && !$dryRun) {
             $pdo->beginTransaction();
             try {
+                $stmt = $pdo->prepare(
+                    'INSERT INTO `migration_quarantine_logs` (`source_file`, `row_number`, `raw_payload`, `error_reason`) VALUES (?, ?, ?, ?)'
+                );
                 foreach ($quarantined as $q) {
-                    $stmt = $pdo->prepare(
-                        'INSERT INTO migration_quarantine_logs (source_file, row_number, raw_payload, error_reason) VALUES (?, ?, ?, ?)'
-                    );
                     $stmt->execute([
                         $q['source_file'],
                         $q['row_number'],
@@ -220,10 +220,10 @@ class EtlMigrationService
                     $quarantinedSaved++;
                 }
 
-                $checkMerchantStmt = $pdo->prepare('SELECT id FROM umkm_merchants WHERE LOWER(business_name) = LOWER(?) LIMIT 1');
-                $checkMarkerStmt = $pdo->prepare('SELECT id FROM map_markers WHERE LOWER(title) = LOWER(?) LIMIT 1');
+                $checkMerchantStmt = $pdo->prepare('SELECT `id` FROM `umkm_merchants` WHERE LOWER(`business_name`) = LOWER(?) LIMIT 1');
+                $checkMarkerStmt = $pdo->prepare('SELECT `id` FROM `map_markers` WHERE LOWER(`title`) = LOWER(?) LIMIT 1');
                 $insertMarker = $pdo->prepare(
-                    'INSERT INTO map_markers (category, title, description, latitude, longitude, icon_type, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)'
+                    'INSERT INTO `map_markers` (`category`, `title`, `description`, `latitude`, `longitude`, `icon_type`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, 1)'
                 );
 
                 foreach ($transformed as $item) {
