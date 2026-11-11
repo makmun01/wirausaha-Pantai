@@ -23,3 +23,11 @@ Pipeline berjalan otomatis pada setiap `push` / `pull_request` ke branch `main` 
 2. **`database-and-smoke-tests`:** Menjalankan service `mysql:8.4`, mengimpor 23 tabel dari `database/jumiang_database.sql`, mengeksekusi smoke test multi-rute + `/api/v1/*`, serta menjalankan seluruh Automated Unit & Feature Test (`php tests/run_all_tests.php`), CLI ETL (`scripts/etl_import.php --apply`), dan Backup Verification (`scripts/backup_verify.php`).
 3. **`docker-and-security-audit`:** Mem-build image Docker dari `Dockerfile`, memverifikasi container Nginx + PHP-FPM menyajikan `/health` (`HTTP 200`), serta memastikan tidak ada kredensial `.env` atau placeholder kunci bocor.
 4. **`deploy-staging`:** Job opsional bersyarat bila GitHub Secret `STAGING_HOST` & `STAGING_SSH_KEY` dikonfigurasi oleh operator.
+
+---
+
+## 3. BUKTI EKSEKUSI AKTUAL GITHUB ACTIONS (`Run #42910953354`)
+- **Commit Diuji:** `96dc718` pada branch `main` (`https://github.com/makmun01/wirausaha-Pantai/actions/runs/42910953354`)
+- **Job 1 (`1. Code Lint & Config Validation`):** **PASS** (`12s`) — PHP `8.3` `php -l`, validasi `composer.json`, dan `docker compose config --quiet`.
+- **Job 2 (`2. MySQL 8.4 Init, Automated Suite & Smoke Tests`):** **PASS** (`41s`) — impor `23` tabel ke `mysql:8.4`, CLI ETL `--dry-run` & `--apply` 2x idempotensi pada MySQL 8.4, `backup_verify.php`, `19/19 PASS` `tests/run_all_tests.php`, serta smoke test `31` rute Web & API preview.
+- **Job 3 (`3. Docker Nginx Build & Security Hygiene Audit`):** **PASS** (`2m12s`) — build `Dockerfile` (`php:8.3-fpm-alpine` + Nginx), verifikasi `/health` (`HTTP 200`) & header keamanan `X-Frame-Options: SAMEORIGIN`.

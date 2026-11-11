@@ -4,6 +4,14 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini dengan meng
 
 ---
 
+## [1.1.1] - 2026-11-11 (Verifikasi Hijau MySQL 8.4 & Penutupan Defect CI)
+
+### Fixed & Verified
+- **`DEF-CI-002` (`CLOSED`):** Mengutip identifier SQL dengan backtick (`` `row_number` ``, dll.) di `app/Services/EtlMigrationService.php` untuk kompatibilitas penuh dengan keyword cadangan window function pada MySQL 8.4.
+- **GitHub Actions CI Run `42910953354` (`PASS`):** Seluruh 3 job CI utama (`Code Lint & Config Validation`, `MySQL 8.4 Init, Automated Suite & Smoke Tests`, dan `Docker Nginx Build & Security Hygiene Audit`) lulus hijau di `origin/main` (commit `96dc718`), menutup total `6` defect terdokumentasi di `docs/testing/DEFECT_LOG.md`.
+
+---
+
 ## [1.1.0] - 2026-11-10 (Audit RPS 16 Minggu, Penambahan Test Suite, ETL & Laporan Final)
 
 ### Added

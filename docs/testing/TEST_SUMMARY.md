@@ -9,11 +9,11 @@
 | Parameter Kualitas | Target Rencana (Target SLA) | Status Realisasi Nyata | Keterangan Audit |
 |---|---|---|---|
 | **Master Test Matrix (`MOD-01`–`MOD-14`)** | 21 Skenario Inti Terdefinisi | **17 PASS**, **4 NOT TESTED** *(ketergantungan Laravel `vendor/` DB runtime)* | Tidak ada manipulasi status |
-| **Automated Test Suite (`php tests/run_all_tests.php`)** | 100% lulus pada jalur layanan & HTTP | **19 / 19 PASS (100% Pass Rate)** (`10` Unit + `9` Feature Live HTTP) | Dieksekusi di PHP `8.0.30` (`993.32 ms`) & CI PHP `8.3` |
-| **Linting Kode PHP (`php -l`)** | 0 syntax errors | **100% PASS** (seluruh file `.php` lolos `php -l`) | Terintegrasi di GitHub Actions Job 1 |
-| **Data Migration ETL (`scripts/etl_import.php`)** | Zero Data Loss & karantina aktif | **PASS** (5 ekstrak -> 3 valid, 1 karantina, 1 duplikat) | Diverifikasi juga idempotensi run ke-2 |
+| **Automated Test Suite (`php tests/run_all_tests.php`)** | 100% lulus pada jalur layanan & HTTP | **19 / 19 PASS (100% Pass Rate)** (`10` Unit + `9` Feature Live HTTP) | Dieksekusi di PHP `8.0.30` lokal & GitHub Actions PHP `8.3` (Run `42910953354`) |
+| **Linting Kode PHP (`php -l`)** | 0 syntax errors | **100% PASS** (seluruh file `.php` lolos `php -l`) | Terintegrasi di GitHub Actions Job 1 (`PASS`) |
+| **Data Migration ETL (`scripts/etl_import.php`)** | Zero Data Loss & karantina aktif | **PASS** (5 ekstrak -> 3 valid, 1 karantina, 1 duplikat) | Diverifikasi idempotensi SQLite lokal & live MySQL 8.4 (CI Run `42910953354`) |
 | **Local Performance Baseline (`scripts/benchmark_local.php`)** | Latency < 2000 ms, Error < 1% | **PASS** (Tier 1–3: Avg `30.74–52.29 ms`, `0.00%` error) | Apache JMeter 500 VU `.jmx` berstatus `NOT TESTED` lokal |
-| **Defect Terbuka (Unresolved FAIL)** | `0` Critical / Major | **0 Open Defects** (5 defect terdokumentasi seluruhnya `CLOSED`) | Terverifikasi di `DEFECT_LOG.md` |
+| **Defect Terbuka (Unresolved FAIL)** | `0` Critical / Major | **0 Open Defects** (6 defect terdokumentasi seluruhnya `CLOSED`) | Termasuk retest `DEF-CI-002` `PASS` pada CI Run `42910953354` |
 
 ---
 
