@@ -22,7 +22,7 @@ Sistem dibangun dengan arsitektur **Laravel Modular Monolith** dilengkapi mode p
 ## 2. REKAPITULASI BUKTI PENGUJIAN NYATA (ISO 29119 COMPLIANCE)
 Seluruh angka di bawah ini merupakan hasil **eksekusi nyata** (bukan simulasi tulis tangan):
 1. **Linting Kode PHP (67+ berkas):** **100% PASS** (`0` syntax error via `php -l`).
-2. **Automated Unit & Live-HTTP Feature Suite (`php tests/run_all_tests.php`):** **19 / 19 PASS (`0` FAIL)** pada PHP `8.0.30` lokal (`608.27 ms` pada verifikasi pasca-perbaikan) dan PHP `8.3` GitHub Actions (`Run #42910953354`), mencakup:
+2. **Automated Unit & Live-HTTP Feature Suite (`php tests/run_all_tests.php`):** **23 / 23 PASS (`0` FAIL)** pada PHP `8.0.30` lokal dan PHP `8.3` GitHub Actions (`Run #42931744204` + perluasan `InteractiveUiFlowsTest`), mencakup:
    - `FinancialBookkeepingUnitTest` (4 jalur White Box CFG, McCabe $V(G)=5$)
    - `OrderStateTransitionUnitTest` (FSM Order, rollback stok, FSM UMKM, BVA harga)
    - `EtlMigrationUnitTest` (normalisasi `+62`, Rupiah, koordinat Pamekasan, karantina, idempotensi SQLite)
@@ -30,6 +30,7 @@ Seluruh angka di bawah ini merupakan hasil **eksekusi nyata** (bukan simulasi tu
    - `BlackBoxEpBvaTest` (9 rute publik + EP/BVA kuantitas & stok `422`/`201`)
    - `ApiAndIntegrationTest` (7 endpoint `/api/v1/*`: `200`, `201`, `401`, `403`, `404`)
    - `SecurityOwaspTest` (Reflected XSS escaping, Security Headers, `.gitignore` `.env`)
+   - `InteractiveUiFlowsTest` (peta filter GIS, 5 produk katalog + cari, keranjang/checkout/reservasi/registrasi, sinkronisasi buku kas vs P&L `Rp 400.000`, Chart.js EIS, form admin, 404 & 23 rute bebas *warning*)
 3. **ETL Migration & Reconciliation (`scripts/etl_import.php`):**
    - `5` baris CSV diekstrak -> `3` valid masuk DB, `1` dikarantina, `1` duplikat dilewati (`100% Zero Data Loss` — `PASS` pada SQLite lokal & live `mysql:8.4` CI Run `42910953354`).
 4. **Local Concurrency Benchmark (`scripts/benchmark_local.php`):**

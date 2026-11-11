@@ -46,7 +46,7 @@ Masuk melalui halaman **`/login`** untuk memilih cepat role demo (`/demo-login?r
 
 ## 3. OPERASIONAL CLI TESTING, ETL & BACKUP (UNTUK OPERATOR/ADMIN)
 
-- **Menjalankan Seluruh Automated Test Suite (19 Unit & Feature Tests):**
+- **Menjalankan Seluruh Automated Test Suite (23 Unit & Feature Tests):**
   ```bash
   php tests/run_all_tests.php
   ```

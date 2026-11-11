@@ -13,7 +13,7 @@
 1. **Frontend:** Antarmuka publik bertema wisata bahari dan dashboard administratif multi-role berbasis Bootstrap 5.3, Alpine.js, Chart.js, dan Leaflet.js (`public/index.php` + Blade templates).
 2. **Backend:** Arsitektur Modular Monolith berbasis Laravel (MVC, 13 Service Classes termasuk `EtlMigrationService`, `OrderProcessingService` FSM guard, `ApiV1Controller`, `SecurityException`, dan RBAC Middleware).
 3. **Database:** 23 tabel relasional MySQL 8.4 (8 file migrasi + `DatabaseSeeder`) dengan file inisialisasi instan `database/jumiang_database.sql` (termasuk tabel `migration_quarantine_logs`).
-4. **Automated Testing, ETL & Ops:** 19 Automated Unit & Feature HTTP Tests (`tests/run_all_tests.php`), Postman collection (`tests/postman/`), JMeter plan (`tests/jmeter/`), CLI ETL (`scripts/etl_import.php`), Benchmark (`scripts/benchmark_local.php`), Backup Check (`scripts/backup_verify.php`), Nginx config (`docker/nginx/default.conf`), serta GitHub Actions CI/CD.
+4. **Automated Testing, ETL & Ops:** 23 Automated Unit & Feature HTTP Tests (`tests/run_all_tests.php`), Postman collection (`tests/postman/`), JMeter plan (`tests/jmeter/`), CLI ETL (`scripts/etl_import.php`), Benchmark (`scripts/benchmark_local.php`), Backup Check (`scripts/backup_verify.php`), Nginx config (`docker/nginx/default.conf`), serta GitHub Actions CI/CD.
 5. **Dokumentasi & Meeting Notes:** Seluruh 16 catatan pertemuan (`docs/meeting-notes/WEEK_01.md` s/d `WEEK_16.md`), laporan pengujian EP/BVA/FSM/WhiteBox/UTS/Performance/Security/UAT, User Manual, dan Final UAS Report tersedia lengkap.
 
 ---

@@ -4,6 +4,17 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini dengan meng
 
 ---
 
+## [1.1.2] - 2026-11-11 (Audit Jalankan Aplikasi, Sinkronisasi Interaktif UI & 23/23 Tests)
+
+### Fixed & Improved
+- **Sinkronisasi Mode Pratinjau (`public/index.php`):** Memperbaiki `DEF-UX-001` s/d `DEF-UX-005` hasil inspeksi alur aplikasi langsung:
+  - Menambahkan tombol `navbar-toggler` responsif mobile, ikon SVG inline, badge keranjang dinamis, menu dashboard kontekstual per role, serta halaman `HTTP 404` (`renderNotFound`) untuk rute yang tidak dikenal.
+  - Melengkapi 5 produk katalog SQL di `/katalog-umkm`, kotak pencarian UI, filter kategori produk, filter 6 tab layer & warna marker di `/peta-wisata`, serta grafik Chart.js (Line & Doughnut) di `/admin/eis`.
+  - Menyinkronkan jurnal pengeluaran `/admin/financial` (`Rp 400.000` dengan 4 transaksi) agar konsisten 100% dengan `/admin/financial/profit-loss` (`+ Rp 525.000`), serta mengaktifkan form interaktif POST/Redirect/Get untuk keranjang, checkout (`INV-...`), reservasi (`RSV-...`), registrasi, tambah produk BVA, mutasi stok, buku kas, FSM pesanan, check-in tiket, verifikasi UMKM, dan unggah CSV dry-run `/admin/etl`.
+- **Perluasan Suite Pengujian (`tests/`):** Menambahkan `HttpClient::postForm()` (perbaikan redirect `302` cURL POST-to-GET) dan 4 test end-to-end baru di `tests/Feature/InteractiveUiFlowsTest.php` (**Total `23 / 23 PASS`** termasuk penyapuan 23 rute web bebas *warning*/*notice*).
+
+---
+
 ## [1.1.1] - 2026-11-11 (Verifikasi Hijau MySQL 8.4 & Penutupan Defect CI)
 
 ### Fixed & Verified

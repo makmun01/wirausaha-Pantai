@@ -19,6 +19,7 @@ $featureClasses = [
     \Tests\Feature\BlackBoxEpBvaTest::class,
     \Tests\Feature\ApiAndIntegrationTest::class,
     \Tests\Feature\SecurityOwaspTest::class,
+    \Tests\Feature\InteractiveUiFlowsTest::class,
 ];
 
 $serverProc = null;

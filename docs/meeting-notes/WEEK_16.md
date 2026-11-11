@@ -37,7 +37,7 @@
 ---
 
 ### D. Pengujian yang Dilakukan
-- Eksekusi penuh `php tests/run_all_tests.php` (`19/19 PASS`), `php scripts/etl_import.php --dry-run` / `--apply` (`Zero Data Loss = PASS`), `php scripts/benchmark_local.php` (`0.00%` error), serta `php scripts/backup_verify.php` (`PASS`).
+- Eksekusi penuh `php tests/run_all_tests.php` (`23/23 PASS`), `php scripts/etl_import.php --dry-run` / `--apply` (`Zero Data Loss = PASS`), `php scripts/benchmark_local.php` (`0.00%` error), serta `php scripts/backup_verify.php` (`PASS`).
 - Simulasi disaster recovery: Verifikasi SHA-256 `6d06538cf67431494f1c98acd21cbda55e609348232d13f7088828aaf67371d0` berkas cadangan `database/jumiang_database.sql` (`23` tabel) dan kesiapan rollback Git.
 
 ---

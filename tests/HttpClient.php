@@ -41,14 +41,19 @@ class HttpClient
         return $this->request('POST', $path, json_encode($payload), $headers, false);
     }
 
+    public function postForm(string $path, array $fields, array $headers = [], bool $followLocation = true): array
+    {
+        $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+        return $this->request('POST', $path, http_build_query($fields), $headers, $followLocation);
+    }
+
     public function request(string $method, string $path, ?string $body = null, array $headers = [], bool $followLocation = true): array
     {
         $ch = curl_init($this->baseUrl . $path);
         $respHeaders = [];
 
-        curl_setopt_array($ch, [
+        $options = [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_FOLLOWLOCATION => $followLocation,
             CURLOPT_TIMEOUT => 10,
             CURLOPT_CONNECTTIMEOUT => 3,
@@ -61,7 +66,18 @@ class HttpClient
                 }
                 return $len;
             },
-        ]);
+        ];
+
+        $upper = strtoupper($method);
+        if ($upper === 'GET') {
+            $options[CURLOPT_HTTPGET] = true;
+        } elseif ($upper === 'POST') {
+            $options[CURLOPT_POST] = true;
+        } else {
+            $options[CURLOPT_CUSTOMREQUEST] = $upper;
+        }
+
+        curl_setopt_array($ch, $options);
 
         if ($this->cookieFile !== null) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);

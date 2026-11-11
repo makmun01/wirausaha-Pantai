@@ -120,7 +120,7 @@ docs/
 # Jalankan server preview lokal (PHP 8.0+ / PHP 8.3+)
 php -S 127.0.0.1:8000 -t public
 
-# Jalankan seluruh 19 automated Unit & Feature HTTP Test
+# Jalankan seluruh 23 automated Unit & Feature HTTP Test
 php tests/run_all_tests.php
 
 # Jalankan CLI ETL CSV Migration (Dry-Run & Apply) & Verifikasi Backup DR
